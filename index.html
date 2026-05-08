@@ -1,449 +1,450 @@
+```html
 <!DOCTYPE html>
-<html lang="tr" class="scroll-smooth">
+<html lang="tr" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Galatasaray SK | The Lion's Den</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lise Nexus | Kampüs Bağlantısı</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@300;400;700;900&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         :root {
-            --gs-red: #A90432;
-            --gs-gold: #FDB912;
-            --gs-black: #050505;
-            --gs-dark-grey: #121212;
+            --primary: #6366f1;
+            --secondary: #ec4899;
+            --bg-dark: #09090b;
+            --glass: rgba(24, 24, 27, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.1);
         }
-
         body {
-            background-color: var(--gs-black);
-            color: white;
-            font-family: 'Montserrat', sans-serif;
-            overflow-x: hidden;
-            /* Mouse imleci varsayılana döndürüldü */
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: #fafafa;
+            overflow: hidden;
+            touch-action: none;
         }
-
-        .font-bebas { font-family: 'Bebas Neue', sans-serif; }
-
-        #cursor-dot {
-            width: 8px;
-            height: 8px;
-            background: var(--gs-gold);
-            position: fixed;
+        .glass-effect {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+        }
+        .swipe-card {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 32px;
+            cursor: grab;
+            transition: transform 0.15s ease-out, opacity 0.2s;
+            user-select: none;
+            touch-action: none;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        .gradient-overlay {
+            background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 40%, transparent 100%);
+        }
+        .nav-item.active { color: var(--primary); transform: scale(1.2); }
+        
+        .loader {
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-left-color: var(--primary);
             border-radius: 50%;
-            pointer-events: none;
-            z-index: 9999;
-            transition: transform 0.1s;
+            animation: spin 0.8s linear infinite;
         }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        #cursor-ring {
-            width: 40px;
-            height: 40px;
-            border: 2px solid var(--gs-red);
-            position: fixed;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 9998;
-            transition: transform 0.15s ease-out;
-        }
-
-        #preloader {
-            position: fixed;
-            inset: 0;
-            background: var(--gs-black);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 10000;
-        }
-
-        .gs-logo-svg {
-            width: 120px;
-            fill: var(--gs-gold);
-            filter: drop-shadow(0 0 15px var(--gs-red));
-        }
-
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-        }
-
-        @keyframes star-glow {
-            0%, 100% { opacity: 0.5; filter: brightness(1); }
-            50% { opacity: 1; filter: brightness(1.5) drop-shadow(0 0 10px var(--gs-gold)); }
-        }
-
-        .star-anim { animation: star-glow 2s infinite ease-in-out; }
-
-        .neon-text {
-            text-shadow: 0 0 10px rgba(253, 185, 18, 0.5), 0 0 20px rgba(169, 4, 50, 0.3);
-        }
-
-        canvas#particles {
-            position: fixed;
-            top: 0;
-            left: 0;
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        .hero-title {
-            font-size: clamp(3rem, 15vw, 10rem);
-            line-height: 0.8;
-            background: linear-gradient(to bottom, #fff 30%, var(--gs-gold) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .view-transition { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
         }
     </style>
 </head>
 <body>
 
-    <canvas id="particles"></canvas>
-
-    <div id="preloader">
-        <svg class="gs-logo-svg mb-4" viewBox="0 0 100 100">
-            <path d="M50 5 L90 25 L90 75 L50 95 L10 75 L10 25 Z" fill="none" stroke="currentColor" stroke-width="2"/>
-            <text x="50" y="65" font-size="40" text-anchor="middle" fill="currentColor" font-family="Bebas Neue">GS</text>
-        </svg>
-        <div class="w-48 h-1 bg-neutral-800 rounded-full overflow-hidden">
-            <div id="loader-bar" class="h-full bg-gradient-to-r from-red-600 to-yellow-500 w-0"></div>
+    <div id="app" class="relative h-screen w-full flex flex-col overflow-hidden max-w-md mx-auto bg-zinc-950 border-x border-zinc-900">
+        <!-- Loading Overlay -->
+        <div id="loading-screen" class="absolute inset-0 z-[300] bg-zinc-950 flex flex-col items-center justify-center">
+            <div class="loader mb-4"></div>
+            <p class="text-zinc-500 font-bold tracking-widest text-[10px] uppercase">Nexus Sync...</p>
         </div>
-        <p id="loader-percent" class="mt-2 font-bebas text-lg text-yellow-500 tracking-widest">0%</p>
+
+        <!-- Header -->
+        <header id="app-header" class="hidden flex justify-between items-center px-6 py-5 z-50">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                    <i data-lucide="zap" class="w-5 h-5 text-white fill-current"></i>
+                </div>
+                <h1 class="text-lg font-black tracking-tighter italic">LISE<span class="text-indigo-500">.</span>NEXUS</h1>
+            </div>
+            <button onclick="App.navigate('profile')" class="w-10 h-10 rounded-full border border-zinc-800 p-0.5 overflow-hidden">
+                <img id="header-avatar" src="https://placehold.co/100x100/18181b/ffffff?text=U" class="w-full h-full rounded-full object-cover">
+            </button>
+        </header>
+
+        <!-- Main Content -->
+        <main id="viewport" class="flex-1 relative flex items-center justify-center p-4 overflow-hidden">
+            <!-- Content Injected via JS -->
+        </main>
+
+        <!-- Navigation -->
+        <nav id="app-nav" class="hidden glass-effect mx-6 mb-6 px-8 py-4 rounded-3xl flex justify-between items-center z-50">
+            <button onclick="App.navigate('discover')" class="nav-item active" data-nav="discover"><i data-lucide="layout-grid"></i></button>
+            <button onclick="App.navigate('chat')" class="nav-item" data-nav="chat"><i data-lucide="message-square"></i></button>
+            <button onclick="App.navigate('events')" class="nav-item" data-nav="events"><i data-lucide="star"></i></button>
+            <button onclick="App.navigate('settings')" class="nav-item" data-nav="settings"><i data-lucide="user"></i></button>
+        </nav>
+
+        <!-- Toast Notification -->
+        <div id="toast" class="fixed bottom-24 left-1/2 -translate-x-1/2 z-[400] glass-effect px-5 py-3 rounded-2xl opacity-0 transition-all pointer-events-none text-xs font-bold text-white shadow-2xl border-indigo-500/20">
+            <span id="toast-text"></span>
+        </div>
     </div>
 
-    <!-- Mouse imleci HTML elementleri kaldırıldı -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    <nav class="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center glass-panel mt-4 mx-auto max-w-[95%] left-0 right-0">
-        <div class="flex items-center gap-2">
-            <span class="font-bebas text-2xl tracking-tighter text-yellow-500">GALATASARAY</span>
-            <div class="h-6 w-[2px] bg-red-600"></div>
-            <span class="font-bebas text-2xl tracking-tighter">SK</span>
-        </div>
-        <div class="hidden md:flex gap-8 font-bebas text-lg tracking-wide">
-            <a href="#" class="hover:text-yellow-500 transition-colors">HISTORY</a>
-            <a href="#" class="hover:text-yellow-500 transition-colors">ARENA</a>
-            <a href="#" class="hover:text-yellow-500 transition-colors">TROPHIES</a>
-            <a href="#" class="hover:text-yellow-500 transition-colors">SQUAD</a>
-        </div>
-        <button class="bg-red-700 hover:bg-red-600 px-6 py-2 rounded-full font-bebas text-lg transition-all transform hover:scale-105 active:scale-95 border border-yellow-500/30">
-            JOIN THE LIONS
-        </button>
-    </nav>
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const appId = 'nexus_v10_final'; // Unique ID for sandbox consistency
+        
+        const fbApp = initializeApp(firebaseConfig);
+        const db = getFirestore(fbApp);
+        const auth = getAuth(fbApp);
 
-    <section class="relative min-h-screen flex flex-col justify-center items-center text-center px-4 pt-20 overflow-hidden">
-        <div id="hero-background" class="absolute inset-0 z-0 opacity-20 scale-110 pointer-events-none">
-            <!-- Lion Silhouette SVG Background -->
-            <svg class="w-full h-full opacity-10" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                <path fill="#FDB912" d="M40,-67.7C52.1,-61.2,62.4,-51.1,70.5,-39.2C78.6,-27.4,84.5,-13.7,85.2,0.4C85.8,14.5,81.2,28.9,73.1,40.8C65,52.7,53.4,61.9,40.8,69C28.2,76.1,14.1,81.1,-0.5,82C-15.1,82.9,-30.2,79.7,-43.3,72.8C-56.5,65.9,-67.7,55.4,-75.7,42.7C-83.7,30.1,-88.4,15,-88.1,0.2C-87.8,-14.7,-82.4,-29.3,-74.1,-41.8C-65.7,-54.2,-54.4,-64.4,-41.6,-70.5C-28.8,-76.6,-14.4,-78.6,0.3,-79.1C15,-79.6,30,-78.5,40,-67.7Z" transform="translate(100 100)" />
-            </svg>
-        </div>
+        const App = {
+            state: {
+                user: null,
+                allUsers: [],
+                currentView: 'loading',
+                isSyncing: false,
+                selectedAvatar: null,
+                isGeneratingAI: false
+            },
 
-        <div class="z-10 mt-10">
-            <!-- 5 Yıldız Düzeni -->
-            <div class="flex justify-center gap-4 mb-6" id="stars-container">
-                <span class="text-4xl md:text-5xl text-yellow-500 star-anim">★</span>
-                <span class="text-4xl md:text-5xl text-yellow-500 star-anim" style="animation-delay: 0.2s">★</span>
-                <span class="text-4xl md:text-5xl text-yellow-500 star-anim" style="animation-delay: 0.4s">★</span>
-                <span class="text-4xl md:text-5xl text-yellow-500 star-anim" style="animation-delay: 0.6s">★</span>
-                <span class="text-4xl md:text-5xl text-yellow-500 star-anim" style="animation-delay: 0.8s">★</span>
-            </div>
-            
-            <h1 class="hero-title font-bebas mb-2 uppercase tracking-tighter" id="hero-title">
-                The Era Of<br>The 5th Star
-            </h1>
-            
-            <p class="text-lg md:text-2xl text-neutral-400 font-light max-w-2xl mx-auto mb-10 px-6" id="hero-desc">
-                Türkiye'nin ilk ve tek Avrupa Fatihi. Adanmış hayatların umudu, zafere yürüyenlerin evi.
-            </p>
+            async compressImage(base64Str, maxWidth = 400, quality = 0.7) {
+                return new Promise((resolve) => {
+                    const img = new Image();
+                    img.src = base64Str;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
 
-            <div class="flex flex-wrap justify-center gap-6" id="hero-cta">
-                <a href="#stats" class="group relative px-8 py-4 bg-yellow-500 text-black font-bold rounded-lg overflow-hidden transition-all">
-                    <span class="relative z-10 font-bebas text-xl">EXPLORE THE LEGACY</span>
-                    <div class="absolute inset-0 bg-white transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300"></div>
-                </a>
-                <a href="#countdown" class="px-8 py-4 border border-red-600 rounded-lg font-bebas text-xl hover:bg-red-600/20 transition-all">
-                    NEXT MATCHDAY
-                </a>
-            </div>
-        </div>
-
-        <div class="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce opacity-50 z-10">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
-            </svg>
-        </div>
-    </section>
-
-    <section id="stats" class="py-32 px-6 relative z-10">
-        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
-            
-            <div class="glass-panel p-10 text-center transform hover:-translate-y-2 transition-transform">
-                <!-- Şampiyonluk sayısı 25 olarak güncellendi -->
-                <h3 class="font-bebas text-6xl text-yellow-500 mb-2 counter" data-target="25">0</h3>
-                <p class="text-neutral-400 font-bebas text-2xl tracking-widest uppercase">Championships</p>
-                <div class="mt-4 h-1 w-20 bg-red-600 mx-auto"></div>
-            </div>
-
-            <div class="glass-panel p-10 text-center border-yellow-500/50 transform hover:-translate-y-2 transition-transform">
-                <h3 class="font-bebas text-6xl text-red-600 mb-2 counter" data-target="18">0</h3>
-                <p class="text-neutral-400 font-bebas text-2xl tracking-widest uppercase">Turkish Cups</p>
-                <div class="mt-4 h-1 w-20 bg-yellow-500 mx-auto"></div>
-            </div>
-
-            <div class="glass-panel p-10 text-center transform hover:-translate-y-2 transition-transform">
-                <h3 class="font-bebas text-6xl text-yellow-500 mb-2 counter" data-target="2">0</h3>
-                <p class="text-neutral-400 font-bebas text-2xl tracking-widest uppercase">European Trophies</p>
-                <div class="mt-4 h-1 w-20 bg-red-600 mx-auto"></div>
-            </div>
-
-        </div>
-    </section>
-
-    <section id="countdown" class="py-20 relative overflow-hidden">
-        <div class="max-w-4xl mx-auto glass-panel p-12 text-center relative z-10">
-            <h2 class="font-bebas text-4xl mb-8 tracking-widest text-red-600">NEXT BATTLE IN THE ARENA</h2>
-            <div class="flex justify-center gap-4 md:gap-10">
-                <div class="flex flex-col">
-                    <span id="days" class="font-bebas text-5xl md:text-7xl text-white">00</span>
-                    <span class="text-xs md:text-sm text-yellow-500 uppercase">Days</span>
-                </div>
-                <span class="font-bebas text-5xl md:text-7xl opacity-30">:</span>
-                <div class="flex flex-col">
-                    <span id="hours" class="font-bebas text-5xl md:text-7xl text-white">00</span>
-                    <span class="text-xs md:text-sm text-yellow-500 uppercase">Hours</span>
-                </div>
-                <span class="font-bebas text-5xl md:text-7xl opacity-30">:</span>
-                <div class="flex flex-col">
-                    <span id="minutes" class="font-bebas text-5xl md:text-7xl text-white">00</span>
-                    <span class="text-xs md:text-sm text-yellow-500 uppercase">Min</span>
-                </div>
-                <span class="font-bebas text-5xl md:text-7xl opacity-30">:</span>
-                <div class="flex flex-col">
-                    <span id="seconds" class="font-bebas text-5xl md:text-7xl text-white">00</span>
-                    <span class="text-xs md:text-sm text-yellow-500 uppercase">Sec</span>
-                </div>
-            </div>
-            <div class="mt-12 flex items-center justify-center gap-6">
-                <div class="text-right">
-                    <p class="font-bebas text-xl">GALATASARAY</p>
-                    <p class="text-xs text-neutral-500 uppercase">Home</p>
-                </div>
-                <div class="text-yellow-500 font-bebas text-4xl">VS</div>
-                <div class="text-left">
-                    <p class="font-bebas text-xl">RIVAL TEAM</p>
-                    <p class="text-xs text-neutral-500 uppercase">Away</p>
-                </div>
-            </div>
-        </div>
-        <!-- Background "GS" floating text -->
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[20vw] font-black opacity-[0.02] pointer-events-none select-none font-bebas">
-            ALI SAMI YEN
-        </div>
-    </section>
-
-    <footer class="py-20 border-t border-white/5 relative z-10">
-        <div class="max-w-7xl mx-auto px-6 text-center">
-            <div class="mb-10 inline-block">
-                <svg class="w-16 h-16 fill-yellow-500" viewBox="0 0 100 100">
-                    <text x="50" y="70" font-size="60" text-anchor="middle" font-family="Bebas Neue">GS</text>
-                </svg>
-            </div>
-            <p class="font-bebas text-3xl md:text-5xl mb-6 tracking-[0.2em] neon-text">"ADANMIŞ HAYATLARIN UMUDU"</p>
-            <p class="text-neutral-500 max-w-lg mx-auto text-sm leading-relaxed mb-12">
-                1905'te başlayan bu kutlu yürüyüş, Ali Sami Yen'in vizyonuyla bugün dünyayı titretiyor. Sarı-Kırmızılı renkler altında birleşen milyonlar için...
-            </p>
-            
-            <div class="flex justify-center gap-6 mb-12">
-                <!-- Simple Social Icons -->
-                <a href="#" class="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-yellow-500 hover:text-black transition-all">TW</a>
-                <a href="#" class="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-red-600 transition-all">IG</a>
-                <a href="#" class="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-yellow-500 hover:text-black transition-all">YT</a>
-            </div>
-
-            <div class="text-xs text-neutral-600 tracking-widest uppercase">
-                &copy; 2024 Galatasaray SK Digital Experience. Engineered for Champions.
-            </div>
-        </div>
-    </footer>
-
-    <script>
-        // Mouse takip mekanizması kaldırıldı
-
-        const canvas = document.getElementById('particles');
-        const ctx = canvas.getContext('2d');
-        let particlesArray = [];
-
-        function initCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-
-        class Particle {
-            constructor() {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
-                this.size = Math.random() * 2 + 1;
-                this.speedX = Math.random() * 0.5 - 0.25;
-                this.speedY = Math.random() * 0.5 - 0.25;
-                this.color = Math.random() > 0.5 ? '#FDB912' : '#A90432';
-                this.opacity = Math.random() * 0.5 + 0.1;
-            }
-            update() {
-                this.x += this.speedX;
-                this.y += this.speedY;
-                if (this.x > canvas.width) this.x = 0;
-                if (this.x < 0) this.x = canvas.width;
-                if (this.y > canvas.height) this.y = 0;
-                if (this.y < 0) this.y = canvas.height;
-            }
-            draw() {
-                ctx.globalAlpha = this.opacity;
-                ctx.fillStyle = this.color;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-
-        function createParticles() {
-            particlesArray = [];
-            for (let i = 0; i < 100; i++) {
-                particlesArray.push(new Particle());
-            }
-        }
-
-        function animateParticles() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particlesArray.forEach(p => {
-                p.update();
-                p.draw();
-            });
-            requestAnimationFrame(animateParticles);
-        }
-
-        window.addEventListener('load', () => {
-            let percentage = 0;
-            const loaderBar = document.getElementById('loader-bar');
-            const loaderPercent = document.getElementById('loader-percent');
-            
-            const interval = setInterval(() => {
-                percentage += Math.floor(Math.random() * 10) + 1;
-                if (percentage >= 100) {
-                    percentage = 100;
-                    clearInterval(interval);
-                    startIntro();
-                }
-                loaderBar.style.width = percentage + '%';
-                loaderPercent.innerText = percentage + '%';
-            }, 50);
-        });
-
-        function startIntro() {
-            const tl = gsap.timeline();
-
-            tl.to("#preloader", {
-                yPercent: -100,
-                duration: 1.2,
-                ease: "expo.inOut",
-                delay: 0.5
-            })
-            .from("#hero-title", {
-                y: 100,
-                opacity: 0,
-                duration: 1.5,
-                ease: "power4.out"
-            }, "-=0.5")
-            /* 5 yıldız için animasyon tetikleyici güncellendi */
-            .from("#stars-container span", {
-                scale: 0,
-                opacity: 0,
-                stagger: 0.15,
-                ease: "back.out(1.7)",
-                duration: 0.8
-            }, "-=1")
-            .from("#hero-desc", {
-                opacity: 0,
-                y: 20,
-                duration: 1
-            }, "-=0.5")
-            .from("#hero-cta", {
-                opacity: 0,
-                y: 20,
-                duration: 1
-            }, "-=0.8");
-
-            // Register ScrollTrigger animations
-            gsap.utils.toArray(".glass-panel").forEach(panel => {
-                gsap.from(panel, {
-                    scrollTrigger: {
-                        trigger: panel,
-                        start: "top 85%",
-                    },
-                    y: 50,
-                    opacity: 0,
-                    duration: 1,
-                    ease: "power2.out"
-                });
-            });
-
-            // Count up numbers
-            const counters = document.querySelectorAll('.counter');
-            counters.forEach(counter => {
-                const target = +counter.getAttribute('data-target');
-                ScrollTrigger.create({
-                    trigger: counter,
-                    onEnter: () => {
-                        let count = 0;
-                        const updateCount = () => {
-                            const speed = target / 50;
-                            if (count < target) {
-                                count += speed;
-                                counter.innerText = Math.ceil(count);
-                                setTimeout(updateCount, 20);
-                            } else {
-                                counter.innerText = target;
+                        if (width > height) {
+                            if (width > maxWidth) {
+                                height *= maxWidth / width;
+                                width = maxWidth;
                             }
-                        };
-                        updateCount();
+                        } else {
+                            if (height > maxWidth) {
+                                width *= maxWidth / height;
+                                height = maxWidth;
+                            }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        // Görseli JPEG formatında ve belirlenen kalitede sıkıştırarak çıktı al
+                        resolve(canvas.toDataURL('image/jpeg', quality));
+                    };
+                });
+            },
+
+            async init() {
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        try {
+                            // Try to fetch profile from the most reliable sandbox path
+                            const userRef = doc(db, 'artifacts', appId, 'users', user.uid);
+                            const userSnap = await getDoc(userRef);
+
+                            if (userSnap.exists()) {
+                                this.state.user = { id: user.uid, ...userSnap.data() };
+                                this.updateHeaderUI();
+                                this.showApp();
+                                this.navigate('discover');
+                                this.startRealtimeSync();
+                            } else {
+                                // Profile doesn't exist, show onboarding
+                                this.hideLoading();
+                                this.renderOnboarding();
+                            }
+                        } catch (err) {
+                            // KRİTİK: Yetki hatası alınırsa bu genellikle belgenin henüz olmamasındandır.
+                            // Çökme yerine kayıt ekranına zorla yönlendiriyoruz.
+                            console.warn("Profil erişimi kısıtlı veya yok, kayıt ekranına yönlendiriliyor...");
+                            this.hideLoading();
+                            this.renderOnboarding();
+                        }
+                    } else {
+                        await signInAnonymously(auth);
                     }
                 });
-            });
-        }
+            },
 
-        function updateCountdown() {
-            // Static next match date (example)
-            const nextMatch = new Date().getTime() + (5 * 24 * 60 * 60 * 1000) + (3 * 60 * 60 * 1000);
-            
-            setInterval(() => {
-                const now = new Date().getTime();
-                const diff = nextMatch - now;
+            async generateAIAvatar() {
+                const prompt = document.getElementById('ai-prompt').value.trim();
+                if (!prompt) return this.showToast("Lütfen bir tarz belirt!");
 
-                const d = Math.floor(diff / (1000 * 60 * 60 * 24));
-                const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                const s = Math.floor((diff % (1000 * 60)) / 1000);
+                this.state.isGeneratingAI = true;
+                this.renderOnboarding();
 
-                document.getElementById('days').innerText = d.toString().padStart(2, '0');
-                document.getElementById('hours').innerText = h.toString().padStart(2, '0');
-                document.getElementById('minutes').innerText = m.toString().padStart(2, '0');
-                document.getElementById('seconds').innerText = s.toString().padStart(2, '0');
-            }, 1000);
-        }
+                try {
+                    const apiKey = ""; // API Key will be automatically injected by the environment
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
+                    
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            instances: [{ prompt: `High quality character portrait of a high school student, ${prompt}, vibrant colors, smooth digital art style.` }], 
+                            parameters: { "sampleCount": 1 } 
+                        })
+                    });
 
-        initCanvas();
-        createParticles();
-        animateParticles();
-        updateCountdown();
+                    const result = await response.json();
+                    if (result.predictions?.[0]?.bytesBase64Encoded) {
+                        const rawAvatar = `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
+                        this.state.selectedAvatar = await this.compressImage(rawAvatar);
+                        this.showToast("Karakter oluşturuldu ve optimize edildi!");
+                    } else {
+                        throw new Error("Görsel üretilemedi.");
+                    }
+                } catch (e) {
+                    this.showToast("AI Üretim Hatası (Kota veya Yetki)");
+                    console.error(e);
+                } finally {
+                    this.state.isGeneratingAI = false;
+                    this.renderOnboarding();
+                }
+            },
 
-        window.addEventListener('resize', () => {
-            initCanvas();
-            createParticles();
-        });
+            renderOnboarding() {
+                const viewport = document.getElementById('viewport');
+                const avatar = this.state.selectedAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=Nexus`;
+                
+                viewport.innerHTML = `
+                    <div class="view-transition flex flex-col items-center p-6 w-full max-h-full overflow-y-auto">
+                        <div class="relative mb-6">
+                            <div class="w-32 h-32 rounded-[2.5rem] bg-zinc-900 border-4 border-indigo-500/20 overflow-hidden relative">
+                                ${this.state.isGeneratingAI ? `<div class="absolute inset-0 bg-black/70 flex items-center justify-center z-10"><div class="loader"></div></div>` : ''}
+                                <img src="${avatar}" class="w-full h-full object-cover">
+                            </div>
+                            <label class="absolute -bottom-2 -right-2 w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center cursor-pointer shadow-xl hover:bg-indigo-500 transition-colors">
+                                <i data-lucide="camera" class="w-5 h-5 text-white"></i>
+                                <input type="file" class="hidden" accept="image/*" onchange="App.handleFileUpload(event)">
+                            </label>
+                        </div>
+
+                        <div class="w-full space-y-4">
+                            <div class="flex gap-2">
+                                <input type="text" id="reg-name" placeholder="İsim Soyisim" class="flex-1 py-4 px-5 rounded-2xl bg-zinc-900 border border-zinc-800 outline-none focus:border-indigo-500 transition-all text-sm">
+                                <select id="reg-grade" class="w-24 py-4 px-2 rounded-2xl bg-zinc-900 border border-zinc-800 text-sm">
+                                    <option value="9">9. Sınıf</option><option value="10">10. Sınıf</option><option value="11">11. Sınıf</option><option value="12">12. Sınıf</option>
+                                </select>
+                            </div>
+
+                            <div class="bg-indigo-600/5 p-4 rounded-2xl border border-indigo-500/10">
+                                <p class="text-[10px] font-black text-indigo-400 uppercase mb-3 flex items-center gap-2"><i data-lucide="sparkles" class="w-3 h-3"></i> AI Avatar Oluştur</p>
+                                <div class="flex gap-2">
+                                    <input type="text" id="ai-prompt" placeholder="Mavi saçlı, basketbolcu..." class="flex-1 bg-black/40 border border-white/5 rounded-xl px-4 py-2 text-xs outline-none focus:border-indigo-500">
+                                    <button onclick="App.generateAIAvatar()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl transition-all active:scale-90">
+                                        <i data-lucide="wand-2" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <textarea id="reg-bio" placeholder="Bize kendinden bahset (Hangi kulüptesin? Hangi dersleri seviyorsun?)" class="w-full py-4 px-5 rounded-2xl bg-zinc-900 border border-zinc-800 h-24 resize-none text-sm"></textarea>
+                            
+                            <button onclick="App.registerUser()" class="w-full py-5 bg-indigo-600 text-white font-black rounded-2xl active:scale-95 transition-transform shadow-xl uppercase tracking-[0.2em] text-xs">Kaydı Tamamla</button>
+                        </div>
+                    </div>
+                `;
+                lucide.createIcons();
+            },
+
+            async registerUser() {
+                const name = document.getElementById('reg-name').value.trim();
+                const grade = document.getElementById('reg-grade').value;
+                const bio = document.getElementById('reg-bio').value.trim();
+                const avatar = this.state.selectedAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${name || Date.now()}`;
+
+                if (!name) return this.showToast("Lütfen ismini yaz!");
+
+                try {
+                    const uid = auth.currentUser.uid;
+                    const userData = {
+                        name, grade, bio, avatar,
+                        createdAt: new Date().toISOString(),
+                        lastActive: serverTimestamp()
+                    };
+
+                    // Save to the strictly permitted path
+                    await setDoc(doc(db, 'artifacts', appId, 'users', uid), userData);
+                    
+                    this.state.user = { id: uid, ...userData };
+                    this.updateHeaderUI();
+                    this.showApp();
+                    this.navigate('discover');
+                    this.startRealtimeSync();
+                    this.showToast("Hoş geldin!");
+                } catch (e) {
+                    console.error(e);
+                    this.showToast("Kayıt hatası: Yetki engeli.");
+                }
+            },
+
+            startRealtimeSync() {
+                if (this.state.isSyncing) return;
+                this.state.isSyncing = true;
+
+                try {
+                    const usersCol = collection(db, 'artifacts', appId, 'users');
+                    onSnapshot(usersCol, (snapshot) => {
+                        this.state.allUsers = snapshot.docs
+                            .map(doc => ({ id: doc.id, ...doc.data() }))
+                            .filter(u => u.id !== auth.currentUser?.uid);
+                        
+                        if (this.state.currentView === 'discover') this.renderDiscover();
+                    }, (err) => {
+                        console.warn("Sync Permission Issue:", err);
+                        this.showToast("Diğer kullanıcılar yüklenemedi (Sadece sen varsın).");
+                    });
+                } catch (e) { console.error(e); }
+            },
+
+            renderDiscover() {
+                const viewport = document.getElementById('viewport');
+                if (this.state.allUsers.length === 0) {
+                    viewport.innerHTML = `<div class="view-transition text-center opacity-40"><i data-lucide="users" class="w-12 h-12 mx-auto mb-4"></i><p class="text-sm font-medium">Şu an kimse online değil...</p></div>`;
+                    lucide.createIcons();
+                    return;
+                }
+
+                viewport.innerHTML = `<div id="card-container" class="relative w-full max-w-[340px] h-[540px]"></div>`;
+                const container = document.getElementById('card-container');
+
+                this.state.allUsers.slice(0, 3).reverse().forEach((u, idx) => {
+                    const card = document.createElement('div');
+                    card.className = 'swipe-card glass-effect';
+                    card.style.zIndex = idx;
+                    card.innerHTML = `
+                        <img src="${u.avatar}" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 gradient-overlay"></div>
+                        <div class="absolute bottom-0 left-0 right-0 p-8">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="bg-indigo-600 text-[10px] font-black px-2 py-1 rounded-md uppercase tracking-wider">${u.grade}. SINIF</span>
+                            </div>
+                            <h3 class="text-2xl font-black italic tracking-tighter">${u.name}</h3>
+                            <p class="text-zinc-300 text-sm mt-2 line-clamp-2">${u.bio || 'Henüz bir bio eklemedi.'}</p>
+                        </div>
+                    `;
+                    if (idx === Math.min(this.state.allUsers.length, 3) - 1) this.attachSwipeEvents(card, u);
+                    container.appendChild(card);
+                });
+            },
+
+            attachSwipeEvents(card, targetUser) {
+                let startX = 0, currentX = 0, isDragging = false;
+                const onStart = (e) => {
+                    isDragging = true;
+                    startX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+                    card.style.transition = 'none';
+                };
+                const onMove = (e) => {
+                    if (!isDragging) return;
+                    currentX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+                    const deltaX = currentX - startX;
+                    const rotation = deltaX * 0.1;
+                    card.style.transform = `translateX(${deltaX}px) rotate(${rotation}deg)`;
+                    card.style.opacity = 1 - Math.abs(deltaX) / 1000;
+                };
+                const onEnd = () => {
+                    if (!isDragging) return;
+                    isDragging = false;
+                    const deltaX = currentX - startX;
+                    if (Math.abs(deltaX) > 120) {
+                        card.style.transition = 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                        card.style.transform = `translateX(${deltaX > 0 ? 1000 : -1000}px) rotate(${deltaX * 0.1}deg)`;
+                        setTimeout(() => {
+                            this.state.allUsers = this.state.allUsers.filter(u => u.id !== targetUser.id);
+                            this.renderDiscover();
+                        }, 200);
+                        if (deltaX > 0) this.showToast(`${targetUser.name} beğenildi!`);
+                    } else {
+                        card.style.transition = '0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                        card.style.transform = '';
+                        card.style.opacity = '1';
+                    }
+                };
+                card.addEventListener('mousedown', onStart);
+                card.addEventListener('touchstart', onStart);
+                window.addEventListener('mousemove', onMove);
+                window.addEventListener('touchmove', onMove);
+                window.addEventListener('mouseup', onEnd);
+                window.addEventListener('touchend', onEnd);
+            },
+
+            navigate(view) {
+                this.state.currentView = view;
+                document.querySelectorAll('.nav-item').forEach(btn => btn.classList.toggle('active', btn.dataset.nav === view));
+                if (view === 'discover') this.renderDiscover();
+                else {
+                    document.getElementById('viewport').innerHTML = `
+                        <div class="view-transition text-center p-8">
+                            <h2 class="text-xl font-bold mb-2">${view.toUpperCase()}</h2>
+                            <p class="text-zinc-500 text-sm">Bu özellik bir sonraki güncellemede gelecek!</p>
+                        </div>
+                    `;
+                }
+                lucide.createIcons();
+            },
+
+            handleFileUpload(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                // Dosya boyutu kontrolü (Opsiyonel ön kontrol)
+                const reader = new FileReader();
+                reader.onload = async (event) => {
+                    this.state.selectedAvatar = await this.compressImage(event.target.result);
+                    this.renderOnboarding();
+                };
+                reader.readAsDataURL(file);
+            },
+
+            updateHeaderUI() {
+                if (this.state.user) {
+                    document.getElementById('header-avatar').src = this.state.user.avatar;
+                }
+            },
+
+            showApp() {
+                this.hideLoading();
+                document.getElementById('app-header').classList.remove('hidden');
+                document.getElementById('app-nav').classList.remove('hidden');
+            },
+
+            hideLoading() { document.getElementById('loading-screen').classList.add('hidden'); },
+
+            showToast(msg) {
+                const t = document.getElementById('toast');
+                document.getElementById('toast-text').innerText = msg;
+                t.style.opacity = '1';
+                setTimeout(() => t.style.opacity = '0', 2500);
+            }
+        };
+
+        window.App = App;
+        window.onload = () => App.init();
     </script>
 </body>
 </html>
+
+```
