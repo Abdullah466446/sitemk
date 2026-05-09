@@ -3,91 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lise Nexus | Kampüs Bağlantısı</title>
-    <!-- Tailwind & Google Fonts -->
+    <title>Lise Nexus | Kampüs</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        :root {
-            --primary: #6366f1;
-            --bg-dark: #09090b;
-            --glass: rgba(24, 24, 27, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.1);
-        }
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: var(--bg-dark);
-            color: #fafafa;
-            overflow: hidden;
-            touch-action: none;
-        }
-        .glass-effect {
-            background: var(--glass);
-            backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border);
-        }
-        .swipe-card {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border-radius: 32px;
-            cursor: grab;
-            transition: transform 0.15s ease-out, opacity 0.2s;
-            user-select: none;
-            touch-action: none;
-            overflow: hidden;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
-        }
-        .gradient-overlay {
-            background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 40%, transparent 100%);
-        }
+        :root { --primary: #6366f1; --bg-dark: #09090b; --glass: rgba(24, 24, 27, 0.7); --glass-border: rgba(255, 255, 255, 0.1); }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg-dark); color: #fafafa; overflow: hidden; touch-action: none; }
+        .glass-effect { background: var(--glass); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); }
+        .swipe-card { position: absolute; width: 100%; height: 100%; border-radius: 32px; cursor: grab; transition: transform 0.15s ease-out, opacity 0.2s; user-select: none; touch-action: none; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); }
+        .gradient-overlay { background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 40%, transparent 100%); }
         .nav-item.active { color: var(--primary); transform: scale(1.1); }
         .nav-item { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); color: #71717a; }
-
-        .loader {
-            width: 32px; height: 32px;
-            border: 3px solid rgba(255, 255, 255, 0.1);
-            border-left-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
+        .loader { width: 28px; height: 28px; border: 3px solid rgba(255, 255, 255, 0.1); border-left-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
-
         .view-transition { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Admin Tag Style */
-        .admin-badge {
-            background: linear-gradient(45deg, #f59e0b, #ef4444);
-            box-shadow: 0 0 15px rgba(245, 158, 11, 0.3);
-        }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
     </style>
 </head>
 <body>
 
     <div id="app" class="relative h-[100dvh] w-full flex flex-col overflow-hidden max-w-md mx-auto bg-zinc-950 border-x border-zinc-900 shadow-2xl">
         
-        <!-- Setup Error Overlay (GitHub Deployment Helper) -->
-        <div id="setup-screen" class="hidden absolute inset-0 z-[500] bg-zinc-950 p-8 flex flex-col items-center justify-center text-center">
-            <div class="w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center mb-6 border border-red-500/20">
-                <i data-lucide="alert-triangle" class="text-red-500 w-8 h-8"></i>
-            </div>
-            <h2 class="text-xl font-bold mb-4">Firebase Bağlantısı Yok</h2>
-            <p class="text-zinc-400 text-sm mb-8 leading-relaxed">GitHub'da çalıştırmak için kodun içindeki <code class="bg-zinc-900 px-2 py-1 rounded">firebaseConfig</code> alanına kendi Firebase bilgilerini eklemelisin.</p>
-            <a href="https://console.firebase.google.com" target="_blank" class="w-full py-4 bg-white text-black font-bold rounded-2xl text-sm">Firebase Konsolu</a>
-        </div>
-
-        <!-- Loading Overlay -->
         <div id="loading-screen" class="absolute inset-0 z-[300] bg-zinc-950 flex flex-col items-center justify-center">
             <div class="loader mb-6"></div>
-            <p class="text-zinc-500 font-bold tracking-[0.3em] text-[10px] uppercase animate-pulse">Lise Nexus Sync</p>
+            <p class="text-zinc-500 font-bold tracking-[0.3em] text-[10px] uppercase animate-pulse">NEXUS SYNC</p>
         </div>
 
-        <!-- Header -->
         <header id="app-header" class="hidden flex justify-between items-center px-6 pt-8 pb-4 z-50">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/30">
@@ -98,22 +41,13 @@
                     <p class="text-[9px] text-zinc-500 font-bold uppercase tracking-widest">Kampüs Canlı</p>
                 </div>
             </div>
-            <div class="flex items-center gap-3">
-                <div id="admin-indicator" class="hidden">
-                    <div class="admin-badge px-2 py-1 rounded-md text-[9px] font-black text-white uppercase tracking-tighter">Admin</div>
-                </div>
-                <button onclick="App.navigate('settings')" class="w-11 h-11 rounded-2xl border border-zinc-800 p-0.5 overflow-hidden transition-transform active:scale-90">
-                    <img id="header-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Guest" class="w-full h-full rounded-[14px] object-cover bg-zinc-900">
-                </button>
-            </div>
+            <button onclick="App.navigate('settings')" class="w-11 h-11 rounded-2xl border border-zinc-800 p-0.5 overflow-hidden transition-transform active:scale-90">
+                <img id="header-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Guest" class="w-full h-full rounded-[14px] object-cover bg-zinc-900">
+            </button>
         </header>
 
-        <!-- Main Viewport -->
-        <main id="viewport" class="flex-1 relative flex items-center justify-center p-6 overflow-hidden">
-            <!-- Dynamic Content -->
-        </main>
+        <main id="viewport" class="flex-1 relative flex items-center justify-center p-6 overflow-hidden"></main>
 
-        <!-- Navigation Bar -->
         <nav id="app-nav" class="hidden glass-effect mx-6 mb-8 px-2 py-2 rounded-[2.5rem] flex justify-around items-center z-50 shadow-2xl">
             <button onclick="App.navigate('discover')" class="nav-item active w-14 h-14 flex items-center justify-center rounded-full" data-nav="discover"><i data-lucide="gallery-horizontal"></i></button>
             <button onclick="App.navigate('chat')" class="nav-item w-14 h-14 flex items-center justify-center rounded-full" data-nav="chat"><i data-lucide="message-circle"></i></button>
@@ -121,19 +55,18 @@
             <button onclick="App.navigate('settings')" class="nav-item w-14 h-14 flex items-center justify-center rounded-full" data-nav="settings"><i data-lucide="user-cog"></i></button>
         </nav>
 
-        <!-- Toast Message -->
-        <div id="toast" class="fixed bottom-28 left-1/2 -translate-x-1/2 z-[400] glass-effect px-6 py-3.5 rounded-2xl opacity-0 translate-y-4 transition-all pointer-events-none text-[11px] font-bold text-white shadow-2xl border-indigo-500/20 flex items-center gap-3">
-            <div class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-ping"></div>
+        <div id="toast" class="fixed bottom-28 left-1/2 -translate-x-1/2 z-[400] glass-effect px-6 py-3.5 rounded-2xl opacity-0 translate-y-4 transition-all pointer-events-none text-[11px] font-bold text-white shadow-2xl flex items-center gap-3">
+            <div id="toast-icon" class="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>
             <span id="toast-text"></span>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, deleteDoc, onSnapshot, collection, serverTimestamp, query, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const MY_FIREBASE_CONFIG = {
+        const firebaseConfig = {
             apiKey: "AIzaSyCMZt-_dLBWnN6NDK6M0NdRMGcakUFLj44",
             authDomain: "okul-a5799.firebaseapp.com",
             projectId: "okul-a5799",
@@ -143,23 +76,13 @@
             measurementId: "G-662ZTGDQVE"
         };
 
-        // Otomatik sistem tespiti (Preview vs GitHub)
-        const finalConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : MY_FIREBASE_CONFIG;
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'okul-a5799-nexus';
-        
+        const appId = 'nexus_prod_v1';
         let fbApp, db, auth;
 
         const App = {
-            state: {
-                user: null,
-                allUsers: [],
-                currentView: 'loading',
-                isSyncing: false,
-                selectedAvatar: null,
-                isGeneratingAI: false
-            },
+            state: { user: null, allUsers: [], currentView: 'loading', selectedAvatar: null, isRegistering: false },
 
-            async compressImage(base64Str, maxWidth = 400, quality = 0.7) {
+            async compressImage(base64Str, maxWidth = 400) {
                 return new Promise((resolve) => {
                     const img = new Image();
                     img.src = base64Str;
@@ -171,139 +94,78 @@
                         canvas.width = w; canvas.height = h;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, w, h);
-                        resolve(canvas.toDataURL('image/jpeg', quality));
+                        resolve(canvas.toDataURL('image/jpeg', 0.6));
                     };
                 });
             },
 
             async init() {
                 try {
-                    fbApp = initializeApp(finalConfig);
+                    fbApp = initializeApp(firebaseConfig);
                     db = getFirestore(fbApp);
                     auth = getAuth(fbApp);
-
-                    const initAuth = async () => {
-                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                            await signInWithCustomToken(auth, __initial_auth_token);
-                        } else {
-                            await signInAnonymously(auth);
-                        }
-                    };
-                    await initAuth();
 
                     onAuthStateChanged(auth, async (user) => {
                         if (user) {
                             await this.checkUserProfile(user);
+                        } else {
+                            await signInAnonymously(auth);
                         }
                     });
                 } catch (e) {
-                    console.error("Firebase Init Error:", e);
-                    document.getElementById('setup-screen').classList.remove('hidden');
-                    document.getElementById('loading-screen').classList.add('hidden');
+                    this.showToast("Firebase Bağlantı Hatası!");
+                    this.hideLoading();
                 }
             },
 
             async checkUserProfile(user) {
                 try {
+                    // SANDBOX/GITHUB UYUMLU YOL: artifacts/{appId}/public/data/users/{uid}
                     const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', user.uid);
                     const snap = await getDoc(userRef);
-
                     if (snap.exists()) {
                         this.state.user = { id: user.uid, ...snap.data() };
-                        if (this.state.user.role === 'admin') document.getElementById('admin-indicator').classList.remove('hidden');
-                        this.updateHeaderUI();
                         this.showApp();
                         this.navigate('discover');
-                        this.startRealtimeSync();
+                        this.startSync();
                     } else {
-                        this.hideLoading();
                         this.renderOnboarding();
                     }
-                } catch (err) {
-                    this.hideLoading();
-                    this.renderOnboarding();
-                }
-            },
-
-            async generateAIAvatar() {
-                const promptInput = document.getElementById('ai-prompt');
-                const prompt = promptInput.value.trim();
-                if (!prompt) return this.showToast("Lütfen bir tarz belirt!");
-
-                this.state.isGeneratingAI = true;
-                this.renderOnboarding();
-
-                try {
-                    // Note: In local/GitHub environments, you need to provide your own Gemini API key if not in preview.
-                    const apiKey = ""; 
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
-                    
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            instances: [{ prompt: `Highly detailed 3D Pixar style character of a high school student, ${prompt}, neutral background, 8k resolution.` }], 
-                            parameters: { "sampleCount": 1 } 
-                        })
-                    });
-
-                    const result = await response.json();
-                    if (result.predictions?.[0]?.bytesBase64Encoded) {
-                        const raw = `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
-                        this.state.selectedAvatar = await this.compressImage(raw);
-                        this.showToast("AI Karakter Hazır!");
-                    } else { throw new Error(); }
                 } catch (e) {
-                    this.showToast("AI Kotası Dolu veya API Anahtarı Yok");
-                } finally {
-                    this.state.isGeneratingAI = false;
+                    console.error("Profile Error:", e);
                     this.renderOnboarding();
+                } finally {
+                    this.hideLoading();
                 }
             },
 
             renderOnboarding() {
-                const viewport = document.getElementById('viewport');
-                const avatar = this.state.selectedAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=NexusUser`;
-                
-                viewport.innerHTML = `
-                    <div class="view-transition flex flex-col items-center w-full max-h-full overflow-y-auto px-2">
-                        <h2 class="text-2xl font-black mb-1 italic">KAMPÜSE KATIL</h2>
-                        <p class="text-zinc-500 text-[10px] uppercase tracking-widest font-bold mb-8">Karakterini Oluştur</p>
-                        
-                        <div class="relative mb-8 group">
-                            <div class="w-36 h-36 rounded-[2.5rem] bg-zinc-900 border-4 border-indigo-500/20 overflow-hidden relative shadow-2xl transition-transform group-hover:scale-105">
-                                ${this.state.isGeneratingAI ? `<div class="absolute inset-0 bg-black/80 flex items-center justify-center z-10"><div class="loader"></div></div>` : ''}
-                                <img src="${avatar}" class="w-full h-full object-cover">
+                const vp = document.getElementById('viewport');
+                const avatar = this.state.selectedAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=User${Math.random()}`;
+                vp.innerHTML = `
+                    <div class="view-transition flex flex-col items-center w-full px-2 max-h-full overflow-y-auto">
+                        <h2 class="text-2xl font-black mb-8 italic">HOŞ GELDİN</h2>
+                        <div class="relative mb-10">
+                            <div class="w-32 h-32 rounded-[2.5rem] bg-zinc-900 border-4 border-indigo-500/20 overflow-hidden shadow-2xl">
+                                <img src="${avatar}" id="preview-img" class="w-full h-full object-cover">
                             </div>
-                            <label class="absolute -bottom-2 -right-2 w-12 h-12 bg-white text-black rounded-full flex items-center justify-center cursor-pointer shadow-xl hover:scale-110 transition-transform">
+                            <label class="absolute -bottom-2 -right-2 w-12 h-12 bg-white text-black rounded-full flex items-center justify-center cursor-pointer shadow-xl">
                                 <i data-lucide="camera" class="w-6 h-6"></i>
                                 <input type="file" class="hidden" accept="image/*" onchange="App.handleFileUpload(event)">
                             </label>
                         </div>
-
-                        <div class="w-full space-y-4">
-                            <div class="grid grid-cols-4 gap-3">
-                                <input type="text" id="reg-name" placeholder="Adın Soyadın" class="col-span-3 py-4 px-5 rounded-2xl bg-zinc-900 border border-zinc-800 focus:border-indigo-500 outline-none transition-all font-medium">
-                                <select id="reg-grade" class="col-span-1 py-4 px-2 rounded-2xl bg-zinc-900 border border-zinc-800 text-xs font-bold text-center">
+                        <div class="w-full space-y-4 mb-10">
+                            <div class="flex gap-2">
+                                <input id="reg-name" type="text" placeholder="Adın Soyadın" class="flex-1 bg-zinc-900 border border-zinc-800 p-4 rounded-2xl outline-none focus:border-indigo-500 text-sm">
+                                <select id="reg-grade" class="bg-zinc-900 border border-zinc-800 p-4 rounded-2xl text-xs font-bold">
                                     <option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option>
                                 </select>
                             </div>
-
-                            <div class="bg-indigo-600/10 p-4 rounded-3xl border border-indigo-500/20">
-                                <p class="text-[9px] font-black text-indigo-400 uppercase mb-3 tracking-widest flex items-center gap-2">
-                                    <i data-lucide="wand-2" class="w-3 h-3"></i> Gemini AI Karakter Tasarla
-                                </p>
-                                <div class="flex gap-2">
-                                    <input type="text" id="ai-prompt" placeholder="Gözlüklü, anime tarzı..." class="flex-1 bg-black/40 border border-white/5 rounded-xl px-4 py-2.5 text-xs outline-none focus:border-indigo-500">
-                                    <button onclick="App.generateAIAvatar()" class="w-12 h-11 bg-indigo-600 text-white rounded-xl flex items-center justify-center shadow-lg active:scale-90 transition-transform">
-                                        <i data-lucide="zap" class="w-5 h-5 fill-current"></i>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <textarea id="reg-bio" placeholder="Bio: Hangi kulüptesin? Nelerden hoşlanırsın?" class="w-full py-4 px-5 rounded-2xl bg-zinc-900 border border-zinc-800 h-28 resize-none text-sm outline-none focus:border-indigo-500"></textarea>
-                            
-                            <button onclick="App.registerUser()" class="w-full py-5 bg-indigo-600 text-white font-black rounded-3xl shadow-xl shadow-indigo-600/20 active:scale-95 transition-all uppercase tracking-[0.25em] text-[11px]">Nexus'u Başlat</button>
+                            <textarea id="reg-bio" placeholder="Bio: Hangi kulüptesin?" class="w-full bg-zinc-900 border border-zinc-800 p-4 rounded-2xl h-24 outline-none focus:border-indigo-500 text-sm resize-none"></textarea>
+                            <button id="reg-btn" onclick="App.registerUser()" class="w-full py-5 bg-indigo-600 text-white font-black rounded-3xl uppercase tracking-widest text-[11px] shadow-xl shadow-indigo-600/20 flex items-center justify-center gap-2">
+                                <span id="btn-text">NEXUS'U BAŞLAT</span>
+                                <div id="btn-loader" class="loader !w-4 !h-4 !border-2 hidden"></div>
+                            </button>
                         </div>
                     </div>
                 `;
@@ -311,132 +173,109 @@
             },
 
             async registerUser() {
+                if (this.state.isRegistering) return;
                 const name = document.getElementById('reg-name').value.trim();
                 const grade = document.getElementById('reg-grade').value;
                 const bio = document.getElementById('reg-bio').value.trim();
-                const avatar = this.state.selectedAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${name || Date.now()}`;
 
                 if (name.length < 3) return this.showToast("İsim çok kısa!");
-
+                
+                this.setRegLoading(true);
+                const avatar = this.state.selectedAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`;
+                
                 try {
                     const uid = auth.currentUser.uid;
-                    const userData = {
-                        name, grade, bio, avatar,
-                        role: 'user',
-                        createdAt: new Date().toISOString(),
-                        lastActive: serverTimestamp()
-                    };
-
-                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', uid), userData);
-                    this.state.user = { id: uid, ...userData };
-                    this.updateHeaderUI();
+                    const data = { name, grade, bio, avatar, role: 'user', createdAt: new Date().toISOString() };
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', uid), data);
+                    
+                    this.state.user = { id: uid, ...data };
                     this.showApp();
                     this.navigate('discover');
-                    this.startRealtimeSync();
-                    this.showToast("Hoş geldin, " + name);
+                    this.startSync();
                 } catch (e) {
-                    this.showToast("Kayıt Hatası: Firebase kurallarını kontrol et.");
+                    console.error("Reg Error:", e);
+                    this.showToast("Hata: Firestore İzni Yok! (Rules kontrol et)");
+                } finally {
+                    this.setRegLoading(false);
                 }
             },
 
-            startRealtimeSync() {
+            setRegLoading(isLoading) {
+                this.state.isRegistering = isLoading;
+                const btn = document.getElementById('reg-btn');
+                const text = document.getElementById('btn-text');
+                const loader = document.getElementById('btn-loader');
+                if (btn) {
+                    btn.disabled = isLoading;
+                    text.classList.toggle('hidden', isLoading);
+                    loader.classList.toggle('hidden', !isLoading);
+                }
+            },
+
+            startSync() {
                 if (this.state.isSyncing) return;
                 this.state.isSyncing = true;
-
                 const q = collection(db, 'artifacts', appId, 'public', 'data', 'users');
-                onSnapshot(q, (snapshot) => {
-                    this.state.allUsers = snapshot.docs
-                        .map(doc => ({ id: doc.id, ...doc.data() }))
-                        .filter(u => u.id !== auth.currentUser?.uid);
-                    
+                onSnapshot(q, (snap) => {
+                    this.state.allUsers = snap.docs
+                        .map(d => ({ id: d.id, ...d.data() }))
+                        .filter(u => u.id !== auth.currentUser.uid);
                     if (this.state.currentView === 'discover') this.renderDiscover();
-                }, (err) => {
-                    console.warn("Sync Error:", err);
-                    this.showToast("Liste güncellenemedi.");
-                });
+                }, (err) => console.warn("Sync Permission Denied"));
             },
 
             renderDiscover() {
-                const viewport = document.getElementById('viewport');
+                const vp = document.getElementById('viewport');
                 if (this.state.allUsers.length === 0) {
-                    viewport.innerHTML = `
-                        <div class="view-transition text-center opacity-30 px-10">
-                            <div class="w-20 h-20 bg-zinc-900 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <i data-lucide="users" class="w-8 h-8"></i>
-                            </div>
-                            <p class="text-sm font-bold uppercase tracking-widest">Çevrende kimse yok</p>
-                            <p class="text-[10px] mt-2">Arkadaşlarını davet et!</p>
-                        </div>`;
-                    lucide.createIcons();
+                    vp.innerHTML = `<div class="opacity-30 text-center text-[10px] font-bold uppercase tracking-widest">Çevrende kimse yok...</div>`;
                     return;
                 }
-
-                viewport.innerHTML = `<div id="card-container" class="relative w-full aspect-[3/4.5] max-w-[340px]"></div>`;
+                vp.innerHTML = `<div id="card-container" class="relative w-full aspect-[3/4.5] max-w-[320px]"></div>`;
                 const container = document.getElementById('card-container');
-
-                this.state.allUsers.slice(0, 3).reverse().forEach((u, idx) => {
+                this.state.allUsers.slice(0, 3).reverse().forEach((u, i) => {
                     const card = document.createElement('div');
                     card.className = 'swipe-card glass-effect';
-                    card.style.zIndex = idx;
+                    card.style.zIndex = i;
                     card.innerHTML = `
                         <img src="${u.avatar}" class="w-full h-full object-cover">
                         <div class="absolute inset-0 gradient-overlay"></div>
                         <div class="absolute bottom-0 left-0 right-0 p-8">
-                            <div class="flex items-center gap-2 mb-3">
-                                <span class="bg-indigo-600/90 backdrop-blur-md text-[9px] font-black px-2.5 py-1.5 rounded-lg uppercase tracking-wider">${u.grade}. SINIF</span>
-                                ${u.role === 'admin' ? '<span class="admin-badge text-[9px] font-black px-2.5 py-1.5 rounded-lg uppercase tracking-wider">MODERATÖR</span>' : ''}
-                            </div>
-                            <h3 class="text-2xl font-extrabold italic tracking-tighter leading-tight">${u.name}</h3>
-                            <p class="text-zinc-400 text-xs mt-2 line-clamp-2 leading-relaxed">${u.bio || 'Henüz bir hikaye yazmamış...'}</p>
-                            
-                            <div class="flex gap-4 mt-8">
-                                <button class="flex-1 py-3 bg-zinc-900/50 border border-white/5 rounded-2xl flex items-center justify-center text-red-500 active:scale-90 transition-transform"><i data-lucide="x" class="w-5 h-5"></i></button>
-                                <button class="flex-1 py-3 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-indigo-600/30 active:scale-90 transition-transform"><i data-lucide="heart" class="w-5 h-5 fill-current"></i></button>
-                            </div>
+                            <span class="bg-indigo-600 px-2 py-1 rounded text-[8px] font-black uppercase mb-2 inline-block">${u.grade}. SINIF</span>
+                            <h3 class="text-xl font-bold italic">${u.name}</h3>
+                            <p class="text-zinc-400 text-[10px] mt-1 line-clamp-2">${u.bio || 'Merhaba!'}</p>
                         </div>
                     `;
-                    // Sadece en üstteki karta swipe ekle
-                    if (idx === Math.min(this.state.allUsers.length, 3) - 1) this.attachSwipe(card, u);
+                    if (i === Math.min(this.state.allUsers.length, 3) - 1) this.attachSwipe(card, u);
                     container.appendChild(card);
                 });
-                lucide.createIcons();
             },
 
             attachSwipe(card, user) {
-                let sX = 0, cX = 0, dragging = false;
-                const start = (e) => {
-                    dragging = true;
-                    sX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
-                    card.style.transition = 'none';
-                };
+                let sX = 0, cX = 0, drag = false;
                 const move = (e) => {
-                    if (!dragging) return;
+                    if (!drag) return;
                     cX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
                     const dX = cX - sX;
                     card.style.transform = `translateX(${dX}px) rotate(${dX * 0.05}deg)`;
-                    card.style.opacity = 1 - Math.abs(dX) / 800;
                 };
                 const end = () => {
-                    if (!dragging) return;
-                    dragging = false;
+                    if (!drag) return;
+                    drag = false;
                     const dX = cX - sX;
-                    if (Math.abs(dX) > 120) {
-                        card.style.transition = 'transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)';
-                        card.style.transform = `translateX(${dX > 0 ? 800 : -800}px) rotate(${dX * 0.1}deg)`;
+                    if (Math.abs(dX) > 100) {
+                        card.style.transform = `translateX(${dX > 0 ? 600 : -600}px) rotate(${dX * 0.1}deg)`;
+                        card.style.opacity = '0';
                         setTimeout(() => {
-                            this.state.allUsers = this.state.allUsers.filter(item => item.id !== user.id);
+                            this.state.allUsers = this.state.allUsers.filter(it => it.id !== user.id);
                             this.renderDiscover();
-                        }, 150);
-                        this.showToast(dX > 0 ? `${user.name}'e kalp atıldı!` : `${user.name} geçildi.`);
+                        }, 200);
+                        this.showToast(dX > 0 ? "Beğendin!" : "Geçtin.");
                     } else {
-                        card.style.transition = '0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28)';
                         card.style.transform = '';
-                        card.style.opacity = '1';
                     }
-                    cX = sX = 0;
                 };
-                card.addEventListener('mousedown', start);
-                card.addEventListener('touchstart', start);
+                card.addEventListener('mousedown', (e) => { drag = true; sX = e.clientX; card.style.transition = 'none'; });
+                card.addEventListener('touchstart', (e) => { drag = true; sX = e.touches[0].clientX; card.style.transition = 'none'; });
                 window.addEventListener('mousemove', move);
                 window.addEventListener('touchmove', move);
                 window.addEventListener('mouseup', end);
@@ -445,142 +284,49 @@
 
             navigate(view) {
                 this.state.currentView = view;
-                document.querySelectorAll('.nav-item').forEach(btn => {
-                    btn.classList.toggle('active', btn.dataset.nav === view);
-                });
-                
-                const vp = document.getElementById('viewport');
+                document.querySelectorAll('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.nav === view));
                 if (view === 'discover') this.renderDiscover();
                 else if (view === 'settings') this.renderSettings();
-                else {
-                    vp.innerHTML = `
-                        <div class="view-transition text-center p-8 opacity-40">
-                            <div class="w-16 h-16 bg-zinc-900 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                <i data-lucide="construction"></i>
-                            </div>
-                            <h2 class="text-xs font-black uppercase tracking-widest">${view} MODÜLÜ</h2>
-                            <p class="text-[10px] mt-2">Çok yakında burada olacak!</p>
-                        </div>`;
-                }
+                else document.getElementById('viewport').innerHTML = `<div class="opacity-20 text-[10px] font-bold uppercase">${view} yakında...</div>`;
                 lucide.createIcons();
             },
 
             renderSettings() {
-                const vp = document.getElementById('viewport');
                 const u = this.state.user;
-                vp.innerHTML = `
-                    <div class="view-transition w-full max-h-full overflow-y-auto px-2">
-                        <div class="bg-zinc-900/50 p-8 rounded-[2.5rem] border border-white/5 mb-6 text-center">
-                            <div class="w-24 h-24 rounded-3xl mx-auto mb-6 border-4 border-indigo-500/20 overflow-hidden shadow-2xl">
-                                <img src="${u.avatar}" class="w-full h-full object-cover">
-                            </div>
-                            <h2 class="text-xl font-bold italic tracking-tighter">${u.name}</h2>
-                            <p class="text-[10px] text-zinc-500 uppercase font-black tracking-[0.2em] mt-1">${u.grade}. Sınıf Öğrencisi</p>
+                document.getElementById('viewport').innerHTML = `
+                    <div class="view-transition w-full text-center px-4">
+                        <div class="w-24 h-24 rounded-3xl bg-zinc-900 mx-auto mb-4 border-2 border-indigo-500/30 overflow-hidden">
+                            <img src="${u.avatar}" class="w-full h-full object-cover">
                         </div>
-
-                        <div class="space-y-3">
-                            <button class="w-full p-5 bg-zinc-900 rounded-2xl flex items-center justify-between border border-white/5 active:scale-[0.98] transition-transform">
-                                <div class="flex items-center gap-4">
-                                    <i data-lucide="shield" class="w-5 h-5 text-indigo-400"></i>
-                                    <span class="text-sm font-semibold">Hesap Güvenliği</span>
-                                </div>
-                                <i data-lucide="chevron-right" class="w-4 h-4 text-zinc-600"></i>
-                            </button>
-                            ${u.role === 'admin' ? `
-                                <button onclick="App.showAdminPanel()" class="w-full p-5 bg-indigo-600/20 rounded-2xl flex items-center justify-between border border-indigo-500/20 active:scale-[0.98] transition-transform">
-                                    <div class="flex items-center gap-4 text-indigo-400">
-                                        <i data-lucide="lock" class="w-5 h-5"></i>
-                                        <span class="text-sm font-black uppercase tracking-widest">Admin Panel</span>
-                                    </div>
-                                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
-                                </button>
-                            ` : ''}
-                            <button onclick="location.reload()" class="w-full p-5 bg-red-500/10 rounded-2xl flex items-center justify-center gap-3 border border-red-500/20 text-red-500 active:scale-[0.98] transition-transform">
-                                <i data-lucide="log-out" class="w-4 h-4"></i>
-                                <span class="text-xs font-black uppercase tracking-widest">Çıkış Yap</span>
-                            </button>
-                        </div>
+                        <h2 class="font-bold">${u.name}</h2>
+                        <p class="text-[10px] text-zinc-500 uppercase font-black mt-1">${u.grade}. Sınıf</p>
+                        <button onclick="location.reload()" class="mt-10 w-full py-4 bg-red-500/10 border border-red-500/20 text-red-500 rounded-2xl text-[10px] font-black uppercase">Çıkış Yap</button>
                     </div>
                 `;
-                lucide.createIcons();
-            },
-
-            async showAdminPanel() {
-                const vp = document.getElementById('viewport');
-                vp.innerHTML = `<div class="view-transition w-full text-center"><div class="loader mx-auto mb-4"></div><p class="text-xs">Yükleniyor...</p></div>`;
-                
-                try {
-                    vp.innerHTML = `
-                        <div class="view-transition w-full max-h-full overflow-y-auto px-2">
-                            <div class="flex items-center justify-between mb-8">
-                                <h2 class="text-lg font-black italic tracking-tighter">YÖNETİM PANELİ</h2>
-                                <button onclick="App.navigate('settings')" class="p-2 bg-zinc-900 rounded-lg"><i data-lucide="x" class="w-4 h-4"></i></button>
-                            </div>
-                            <div class="space-y-3">
-                                ${this.state.allUsers.map(usr => `
-                                    <div class="p-4 bg-zinc-900/80 rounded-2xl flex items-center justify-between border border-white/5">
-                                        <div class="flex items-center gap-3">
-                                            <img src="${usr.avatar}" class="w-10 h-10 rounded-xl object-cover">
-                                            <div>
-                                                <p class="text-xs font-bold leading-none">${usr.name}</p>
-                                                <p class="text-[9px] text-zinc-500 mt-1 uppercase">${usr.grade}. Sınıf</p>
-                                            </div>
-                                        </div>
-                                        <button onclick="App.deleteUser('${usr.id}')" class="w-8 h-8 bg-red-500/20 text-red-500 rounded-lg flex items-center justify-center transition-all hover:bg-red-500 hover:text-white">
-                                            <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                        </button>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                    `;
-                    lucide.createIcons();
-                } catch (e) { this.showToast("Admin hatası."); }
-            },
-
-            async deleteUser(targetId) {
-                if (!confirm("Bu kullanıcıyı silmek istediğine emin misin?")) return;
-                try {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', targetId));
-                    this.showToast("Kullanıcı uçuruldu!");
-                    this.showAdminPanel(); // Refresh
-                } catch (e) { this.showToast("Silme yetkin yok."); }
             },
 
             handleFileUpload(e) {
-                const file = e.target.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = async (ev) => {
+                const f = e.target.files[0]; if (!f) return;
+                const r = new FileReader();
+                r.onload = async (ev) => {
                     this.state.selectedAvatar = await this.compressImage(ev.target.result);
-                    this.renderOnboarding();
+                    const img = document.getElementById('preview-img');
+                    if(img) img.src = this.state.selectedAvatar;
                 };
-                reader.readAsDataURL(file);
-            },
-
-            updateHeaderUI() {
-                if (this.state.user) {
-                    document.getElementById('header-avatar').src = this.state.user.avatar;
-                }
+                r.readAsDataURL(f);
             },
 
             showApp() {
-                this.hideLoading();
                 document.getElementById('app-header').classList.remove('hidden');
                 document.getElementById('app-nav').classList.remove('hidden');
+                document.getElementById('header-avatar').src = this.state.user.avatar;
             },
-
             hideLoading() { document.getElementById('loading-screen').classList.add('hidden'); },
-
-            showToast(msg) {
+            showToast(m) {
                 const t = document.getElementById('toast');
-                document.getElementById('toast-text').innerText = msg;
-                t.style.opacity = '1';
-                t.style.transform = 'translate(-50%, -10px)';
-                setTimeout(() => {
-                    t.style.opacity = '0';
-                    t.style.transform = 'translate(-50%, 10px)';
-                }, 3000);
+                document.getElementById('toast-text').innerText = m;
+                t.style.opacity = '1'; t.style.transform = 'translate(-50%, -10px)';
+                setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translate(-50%, 10px)'; }, 2500);
             }
         };
 
