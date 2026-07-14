@@ -278,12 +278,15 @@
     let localDead = false;
     let remoteDead = false;
     let shootCooldown = 0;
-    const SHOOT_DELAY = 0.15; // saniye
+    const SHOOT_DELAY = 0.15;
     let laserLine = null;
     let laserDuration = 0;
+    let _lastSend = 0;
 
     // --- Three.js initialization ---
     function initScene() {
+        if (scene) return; // already initialized
+
         scene = new THREE.Scene();
         scene.background = new THREE.Color(0x0a0a1a);
         scene.fog = new THREE.Fog(0x0a0a1a, 40, 70);
@@ -295,7 +298,7 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         document.body.prepend(renderer.domElement);
 
         controls = new THREE.PointerLockControls(camera, renderer.domElement);
@@ -322,12 +325,12 @@
         backLight.position.set(-20, 10, -20);
         scene.add(backLight);
 
-        // Grid helper as floor texture alternative
+        // Grid helper as floor
         const gridHelper = new THREE.GridHelper(arenaSize * 2, 20, 0x88aaff, 0x4466aa);
         gridHelper.position.y = -0.01;
         scene.add(gridHelper);
 
-        // Floor (translucent)
+        // Floor
         const floorGeo = new THREE.PlaneGeometry(arenaSize * 2, arenaSize * 2);
         const floorMat = new THREE.MeshStandardMaterial({
             color: 0x112233,
@@ -360,7 +363,7 @@
             obstacles.push(wall);
         });
 
-        // Obstacles (boxes) - procedural
+        // Obstacles
         const obstacleMat = new THREE.MeshStandardMaterial({ color: 0x4a6a8a, roughness: 0.4, metalness: 0.6 });
         const obstaclePositions = [
             { x: -8, z: -8, w: 3, h: 1.5, d: 3 },
@@ -383,7 +386,7 @@
             obstacles.push(mesh);
         });
 
-        // Some vertical pillars
+        // Pillars
         const pillarMat = new THREE.MeshStandardMaterial({ color: 0x5a7a9a, roughness: 0.3, metalness: 0.7 });
         for (let i = 0; i < 6; i++) {
             const angle = (i / 6) * Math.PI * 2;
@@ -399,15 +402,52 @@
             obstacles.push(pillar);
         }
 
-        // Respawn points (safe positions)
-        // We'll just define some random positions later.
+        // Window resize
+        window.addEventListener('resize', () => {
+            if (renderer) {
+                const w = window.innerWidth, h = window.innerHeight;
+                renderer.setSize(w, h);
+                camera.aspect = w / h;
+                camera.updateProjectionMatrix();
+            }
+        });
+
+        // --- Input events (only after renderer exists) ---
+        // Click on canvas to lock pointer
+        renderer.domElement.addEventListener('click', () => {
+            if (isPlaying && !localDead && controls) {
+                controls.lock();
+            }
+        });
+
+        // Mouse down for shooting
+        renderer.domElement.addEventListener('mousedown', (e) => {
+            if (e.button === 0 && isPlaying && controls && controls.isLocked) {
+                shoot();
+            }
+        });
+
+        // Keyboard events (global)
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'w' || e.key === 'W') keys.w = true;
+            if (e.key === 'a' || e.key === 'A') keys.a = true;
+            if (e.key === 's' || e.key === 'S') keys.s = true;
+            if (e.key === 'd' || e.key === 'D') keys.d = true;
+        });
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'w' || e.key === 'W') keys.w = false;
+            if (e.key === 'a' || e.key === 'A') keys.a = false;
+            if (e.key === 's' || e.key === 'S') keys.s = false;
+            if (e.key === 'd' || e.key === 'D') keys.d = false;
+        });
+
+        // Prevent context menu on canvas
+        renderer.domElement.addEventListener('contextmenu', (e) => e.preventDefault());
     }
 
     // --- Player creation ---
     function createPlayerMesh(color, isLocal = false) {
         const group = new THREE.Group();
-
-        // Body (capsule-like)
         const bodyMat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.5, metalness: 0.2 });
         const bodyGeo = new THREE.CylinderGeometry(0.4, 0.4, 1.2, 8);
         const body = new THREE.Mesh(bodyGeo, bodyMat);
@@ -416,7 +456,6 @@
         body.receiveShadow = true;
         group.add(body);
 
-        // Head
         const headMat = new THREE.MeshStandardMaterial({ color: 0xffccaa, roughness: 0.3 });
         const headGeo = new THREE.SphereGeometry(0.25, 8, 8);
         const head = new THREE.Mesh(headGeo, headMat);
@@ -425,7 +464,6 @@
         head.receiveShadow = true;
         group.add(head);
 
-        // Gun (small box)
         const gunMat = new THREE.MeshStandardMaterial({ color: 0x888888, roughness: 0.3, metalness: 0.8 });
         const gunGeo = new THREE.BoxGeometry(0.1, 0.1, 0.4);
         const gun = new THREE.Mesh(gunGeo, gunMat);
@@ -433,17 +471,13 @@
         gun.castShadow = true;
         group.add(gun);
 
-        // For local player, we add a small direction indicator (optional)
-        // We'll store reference to the gun for later? Not needed.
-
         group.userData.body = body;
         group.userData.head = head;
         group.userData.gun = gun;
-
         return group;
     }
 
-    // --- Spawn player at random safe position ---
+    // --- Spawn safe position ---
     function getRandomSafePosition() {
         let pos;
         let attempts = 0;
@@ -455,7 +489,6 @@
                 (Math.random() - 0.5) * halfArena * 1.6
             );
             attempts++;
-            // Check collision with obstacles
             let valid = true;
             for (let obs of obstacles) {
                 const box = new THREE.Box3().setFromObject(obs);
@@ -473,20 +506,16 @@
         return pos;
     }
 
-    // --- Collision detection for movement ---
+    // --- Collision detection ---
     function canMoveTo(newPos, playerRadius = 0.5, height = 1.8) {
         const half = playerRadius;
-        const minY = 0;
-        const maxY = height;
-        // Check bounds
         if (newPos.x < -arenaSize + 0.5 || newPos.x > arenaSize - 0.5 ||
             newPos.z < -arenaSize + 0.5 || newPos.z > arenaSize - 0.5) {
             return false;
         }
-        // Check obstacles
         const playerBox = new THREE.Box3(
-            new THREE.Vector3(newPos.x - half, minY, newPos.z - half),
-            new THREE.Vector3(newPos.x + half, maxY, newPos.z + half)
+            new THREE.Vector3(newPos.x - half, 0, newPos.z - half),
+            new THREE.Vector3(newPos.x + half, height, newPos.z + half)
         );
         for (let obs of obstacles) {
             const obsBox = new THREE.Box3().setFromObject(obs);
@@ -504,11 +533,8 @@
         updateHealthUI();
         const pos = getRandomSafePosition();
         localPlayer.position.copy(pos);
-        // Reset camera position (controls already has camera, we need to set controls target? Actually we move the camera with controls.
-        // We'll set camera position and then update controls.
         camera.position.set(pos.x, 1.7, pos.z);
         controls.target.set(pos.x, 1.7, pos.z);
-        // Send updated position to remote
         if (conn && conn.open) {
             conn.send({
                 type: 'state',
@@ -527,8 +553,6 @@
         updateEnemyHealthUI();
         const pos = getRandomSafePosition();
         remotePlayer.position.copy(pos);
-        // Send updated health to remote? They will update their own health, we just display.
-        // We'll also send our health to remote if we are host? Actually health is synced.
     }
 
     // --- UI updates ---
@@ -546,22 +570,17 @@
 
     // --- Shooting ---
     function shoot() {
-        if (!isPlaying || localDead || shootCooldown > 0) return;
+        if (!isPlaying || localDead || shootCooldown > 0 || !controls || !controls.isLocked) return;
         shootCooldown = SHOOT_DELAY;
 
-        // Raycaster from camera center
         const raycaster = new THREE.Raycaster();
         raycaster.setFromCamera({ x: 0, y: 0 }, camera);
-        // Check intersection with remote player
         if (remotePlayer && !remoteDead) {
             const intersects = raycaster.intersectObject(remotePlayer, true);
             if (intersects.length > 0) {
-                // Hit!
-                // Reduce remote health
                 const damage = 25;
                 remoteHealth = Math.max(0, remoteHealth - damage);
                 updateEnemyHealthUI();
-                // Send damage event to remote
                 if (conn && conn.open) {
                     conn.send({
                         type: 'damage',
@@ -569,38 +588,30 @@
                         from: isHost ? 'host' : 'client'
                     });
                 }
-                // Visual hit effect: flash enemy?
-                // Also spawn laser line to impact point
                 const hitPoint = intersects[0].point;
                 createLaser(hitPoint);
-                // If remote health <= 0, remote dies
                 if (remoteHealth <= 0) {
                     remoteDead = true;
-                    // Send death event
                     if (conn && conn.open) {
                         conn.send({ type: 'remoteDead' });
                     }
-                    // Respawn remote after delay
                     setTimeout(() => {
                         respawnRemote();
                     }, 3000);
                 }
             } else {
-                // Miss - just laser to far point
                 const farPoint = new THREE.Vector3(0, 0, -100);
                 farPoint.applyQuaternion(camera.quaternion);
                 farPoint.add(camera.position);
                 createLaser(farPoint);
             }
         } else {
-            // No remote player or dead - just show laser to far point
             const farPoint = new THREE.Vector3(0, 0, -100);
             farPoint.applyQuaternion(camera.quaternion);
             farPoint.add(camera.position);
             createLaser(farPoint);
         }
 
-        // Send shoot event to remote (so they see laser)
         if (conn && conn.open) {
             const origin = camera.position.clone();
             const dir = new THREE.Vector3(0, 0, -1);
@@ -614,7 +625,6 @@
     }
 
     function createLaser(targetPoint) {
-        // Remove old laser
         if (laserLine) {
             scene.remove(laserLine);
             laserLine.geometry.dispose();
@@ -624,31 +634,22 @@
         const origin = camera.position.clone();
         const points = [origin, targetPoint];
         const geometry = new THREE.BufferGeometry().setFromPoints(points);
-        const material = new THREE.LineBasicMaterial({ color: 0xff4400, linewidth: 1 });
+        const material = new THREE.LineBasicMaterial({ color: 0xff4400 });
         laserLine = new THREE.Line(geometry, material);
         scene.add(laserLine);
-        laserDuration = 0.1; // seconds
+        laserDuration = 0.1;
     }
 
-    // --- Handle incoming data ---
+    // --- Data handling ---
     function handleData(data) {
         if (!data) return;
         switch (data.type) {
             case 'state':
-                // Update remote player position and rotation
                 if (remotePlayer) {
                     remotePlayer.position.set(data.pos.x, data.pos.y, data.pos.z);
-                    // Rotation: we need to rotate the remote player group? 
-                    // For remote player, we just set its rotation (yaw) and the head's pitch? We'll keep it simple: rotate the entire group.
-                    // We'll store yaw and pitch and apply.
-                    // We'll rotate the group: group.rotation.y = yaw; but we need to separate body and head for pitch.
-                    // Since we have separate meshes, we can rotate body and head.
-                    // For simplicity, rotate entire group on Y, and head on X.
-                    if (data.rot) {
-                        remotePlayer.rotation.y = data.rot.yaw || 0;
-                        if (remotePlayer.userData.head) {
-                            remotePlayer.userData.head.rotation.x = data.rot.pitch || 0;
-                        }
+                    remotePlayer.rotation.y = data.rot.yaw || 0;
+                    if (remotePlayer.userData.head) {
+                        remotePlayer.userData.head.rotation.x = data.rot.pitch || 0;
                     }
                     remoteHealth = data.health || 100;
                     remoteDead = data.dead || false;
@@ -656,14 +657,12 @@
                 }
                 break;
             case 'damage':
-                // We received damage from remote
                 if (!localDead) {
                     localHealth = Math.max(0, localHealth - (data.amount || 25));
                     updateHealthUI();
                     if (localHealth <= 0) {
                         localDead = true;
                         deathOverlay.style.display = 'flex';
-                        // Respawn after 3s
                         clearTimeout(respawnTimer);
                         respawnTimer = setTimeout(() => {
                             respawnLocal();
@@ -672,23 +671,17 @@
                 }
                 break;
             case 'remoteDead':
-                // Remote died - we already handle via health zero, but if we get this, ensure remoteDead true
                 remoteDead = true;
                 updateEnemyHealthUI();
-                // Respawn remote after delay (host will do it? Actually remote will respawn itself, but we can also handle here)
                 setTimeout(() => {
                     respawnRemote();
                 }, 3000);
                 break;
             case 'shoot':
-                // Render laser from remote
                 if (data.origin && data.dir) {
                     const origin = new THREE.Vector3(data.origin.x, data.origin.y, data.origin.z);
                     const dir = new THREE.Vector3(data.dir.x, data.dir.y, data.dir.z);
-                    // Raycast to see if it hits our local player? We could check, but we trust remote hit detection.
-                    // Just display laser to far point
                     const far = origin.clone().add(dir.clone().multiplyScalar(100));
-                    // Create laser line from origin to far
                     if (laserLine) {
                         scene.remove(laserLine);
                         laserLine.geometry.dispose();
@@ -700,8 +693,6 @@
                     const mat = new THREE.LineBasicMaterial({ color: 0xff8800 });
                     const line = new THREE.Line(geo, mat);
                     scene.add(line);
-                    // Store as laserLine? But we want it to disappear after short time.
-                    // We'll manage with a timer.
                     setTimeout(() => {
                         scene.remove(line);
                         line.geometry.dispose();
@@ -714,11 +705,10 @@
         }
     }
 
-    // --- Connection handling ---
+    // --- Connection ---
     function startGame(hostMode, peerId = null) {
         isHost = hostMode;
-        // Initialize scene if not already
-        if (!scene) initScene();
+        initScene(); // ensures renderer and events exist
 
         // Create local player
         const color = isHost ? 0x44aaff : 0xff6644;
@@ -727,12 +717,11 @@
         localPlayer.position.copy(pos);
         scene.add(localPlayer);
 
-        // Camera at player position
         camera.position.set(pos.x, 1.7, pos.z);
         controls.target.set(pos.x, 1.7, pos.z);
         controls.lock();
 
-        // Create remote player (will be positioned later)
+        // Create remote player
         const remoteColor = isHost ? 0xff6644 : 0x44aaff;
         remotePlayer = createPlayerMesh(remoteColor, false);
         const rpos = getRandomSafePosition();
@@ -752,39 +741,39 @@
         statusEl.textContent = '🔗 BAĞLANDI';
         statusEl.style.color = '#0f0';
 
-        // Start animation loop
+        // Start animation
         animate();
 
-        // Set up PeerJS connection
+        // PeerJS setup
         if (hostMode) {
-            // Host creates peer
             peer = new Peer();
             peer.on('open', (id) => {
                 hostIdText.textContent = id;
                 hostIdDisplay.style.display = 'block';
-                // Wait for connection from client
             });
             peer.on('connection', (incoming) => {
                 conn = incoming;
                 conn.on('data', handleData);
-                conn.on('close', () => {
-                    disconnectGame();
-                });
-                // Send initial state
+                conn.on('close', () => disconnectGame());
                 sendState();
             });
+            peer.on('error', (err) => {
+                console.error('Peer error:', err);
+                disconnectGame();
+            });
         } else {
-            // Client connects to host
             if (!peerId) return;
             peer = new Peer();
             peer.on('open', () => {
                 conn = peer.connect(peerId);
                 conn.on('open', () => {
                     conn.on('data', handleData);
-                    conn.on('close', () => {
-                        disconnectGame();
-                    });
+                    conn.on('close', () => disconnectGame());
                     sendState();
+                });
+                conn.on('error', (err) => {
+                    console.error('Connection error:', err);
+                    disconnectGame();
                 });
             });
             peer.on('error', (err) => {
@@ -792,20 +781,15 @@
                 disconnectGame();
             });
         }
-
-        // Listen for window resize
-        window.addEventListener('resize', onResize);
     }
 
     function sendState() {
         if (!conn || !conn.open) return;
         const pos = camera.position;
-        const yaw = camera.rotation.y;
-        const pitch = camera.rotation.x;
         conn.send({
             type: 'state',
             pos: { x: pos.x, y: pos.y, z: pos.z },
-            rot: { yaw: yaw, pitch: pitch },
+            rot: { yaw: camera.rotation.y, pitch: camera.rotation.x },
             health: localHealth,
             dead: localDead
         });
@@ -813,23 +797,21 @@
 
     function disconnectGame() {
         isPlaying = false;
-        if (conn) {
-            conn.close();
-            conn = null;
-        }
-        if (peer) {
-            peer.destroy();
-            peer = null;
-        }
-        // Go back to menu
+        if (conn) { conn.close(); conn = null; }
+        if (peer) { peer.destroy(); peer = null; }
         menu.style.display = 'flex';
         hud.style.display = 'none';
         deathOverlay.style.display = 'none';
         hostIdDisplay.style.display = 'none';
         joinArea.style.display = 'none';
-        // Clean up scene
+        // Clean scene
         if (scene) {
-            while(scene.children.length > 0) scene.remove(scene.children[0]);
+            while(scene.children.length > 0) {
+                const child = scene.children[0];
+                if (child.geometry) child.geometry.dispose();
+                if (child.material) child.material.dispose();
+                scene.remove(child);
+            }
             scene = null;
         }
         if (renderer) {
@@ -837,13 +819,10 @@
             renderer.domElement.remove();
             renderer = null;
         }
-        if (controls) {
-            controls.unlock();
-            controls = null;
-        }
+        controls = null;
         localPlayer = null;
         remotePlayer = null;
-        // Reset variables
+        obstacles = [];
         localHealth = 100;
         remoteHealth = 100;
         localDead = false;
@@ -851,17 +830,16 @@
         clearTimeout(respawnTimer);
         statusEl.textContent = '⚠ BAĞLANTI KOPTU';
         statusEl.style.color = '#f00';
-        // Re-initialize? We'll restart when host/join again.
+        // Re-init scene for next game? We'll re-create on start.
     }
 
-    // --- Movement and animation ---
+    // --- Animation loop ---
     function animate() {
         if (!isPlaying) return;
         requestAnimationFrame(animate);
 
         const delta = clock.getDelta();
 
-        // Update cooldowns
         if (shootCooldown > 0) shootCooldown -= delta;
         if (laserDuration > 0) {
             laserDuration -= delta;
@@ -874,7 +852,7 @@
         }
 
         // Movement
-        if (!localDead && controls.isLocked) {
+        if (!localDead && controls && controls.isLocked) {
             const forward = new THREE.Vector3(0, 0, -1);
             forward.applyQuaternion(camera.quaternion);
             forward.y = 0;
@@ -892,84 +870,33 @@
             if (keys.d) moveVec.add(right);
             if (moveVec.length() > 0) {
                 moveVec.normalize().multiplyScalar(moveSpeed * delta);
-                // Try move in each axis separately for sliding
                 const newPos = camera.position.clone();
-                // X
                 let testX = newPos.clone();
                 testX.x += moveVec.x;
-                if (canMoveTo(testX)) {
-                    newPos.x += moveVec.x;
-                }
-                // Z
+                if (canMoveTo(testX)) newPos.x += moveVec.x;
                 let testZ = newPos.clone();
                 testZ.z += moveVec.z;
-                if (canMoveTo(testZ)) {
-                    newPos.z += moveVec.z;
-                }
-                // Y is fixed (no vertical movement)
+                if (canMoveTo(testZ)) newPos.z += moveVec.z;
                 camera.position.copy(newPos);
-                // Update local player mesh position
                 if (localPlayer) {
                     localPlayer.position.copy(newPos);
-                    localPlayer.position.y = 0; // mesh is at ground
+                    localPlayer.position.y = 0;
                 }
-                // Send state update (throttled? we'll send every frame for smoothness, but we can optimize)
-                if (conn && conn.open) {
-                    // Send state only if position changed significantly? For simplicity, send every frame.
-                    // But we can throttle to reduce bandwidth: send every 50ms
-                    // We'll implement a simple throttle via time
-                    if (!window._lastSend || performance.now() - window._lastSend > 50) {
-                        sendState();
-                        window._lastSend = performance.now();
-                    }
+                if (conn && conn.open && performance.now() - _lastSend > 50) {
+                    sendState();
+                    _lastSend = performance.now();
                 }
             }
         }
 
-        // Render
-        renderer.render(scene, camera);
-    }
-
-    // --- Keyboard and mouse events ---
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'w' || e.key === 'W') keys.w = true;
-        if (e.key === 'a' || e.key === 'A') keys.a = true;
-        if (e.key === 's' || e.key === 'S') keys.s = true;
-        if (e.key === 'd' || e.key === 'D') keys.d = true;
-    });
-    document.addEventListener('keyup', (e) => {
-        if (e.key === 'w' || e.key === 'W') keys.w = false;
-        if (e.key === 'a' || e.key === 'A') keys.a = false;
-        if (e.key === 's' || e.key === 'S') keys.s = false;
-        if (e.key === 'd' || e.key === 'D') keys.d = false;
-    });
-
-    renderer.domElement.addEventListener('click', () => {
-        if (isPlaying && !localDead) {
-            controls.lock();
-        }
-    });
-
-    renderer.domElement.addEventListener('mousedown', (e) => {
-        if (e.button === 0 && isPlaying && controls.isLocked) {
-            shoot();
-        }
-    });
-
-    function onResize() {
-        if (renderer) {
-            const w = window.innerWidth, h = window.innerHeight;
-            renderer.setSize(w, h);
-            camera.aspect = w / h;
-            camera.updateProjectionMatrix();
+        if (renderer && scene && camera) {
+            renderer.render(scene, camera);
         }
     }
 
     // --- UI button events ---
     hostBtn.addEventListener('click', () => {
-        // Hide join area
         joinArea.style.display = 'none';
-        // Start as host
         startGame(true);
     });
 
@@ -989,10 +916,7 @@
         startGame(false, id);
     });
 
-    // --- Initial setup (no scene yet) ---
-    // We'll create scene on first start.
-
-    // Handle disconnection from peer (e.g., browser close)
+    // Handle disconnect on page unload
     window.addEventListener('beforeunload', () => {
         if (peer) peer.destroy();
     });
