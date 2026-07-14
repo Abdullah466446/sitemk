@@ -667,14 +667,24 @@
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js">
     </script>
 
-    <!-- ═══════ POST-PROCESSING (Bloom) ═══════ -->
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js">
+    <!-- ═══════ POST-PROCESSING (tüm bağımlılıklar doğru sırada) ═══════ -->
+    <!-- 1. CopyShader (EffectComposer ve ShaderPass için gerekli) -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js">
     </script>
+    <!-- 2. ShaderPass (EffectComposer için gerekli) -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js">
+    </script>
+    <!-- 3. RenderPass -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js">
     </script>
+    <!-- 4. LuminosityHighPassShader (UnrealBloomPass için) -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js">
+    </script>
+    <!-- 5. UnrealBloomPass -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js">
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js">
+    <!-- 6. EffectComposer (en son) -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js">
     </script>
 
     <script>
@@ -1066,7 +1076,7 @@
                     obstacles.push(mesh);
                 });
 
-                // ── Ramps (sloped boxes) ──
+                // ── Ramps ──
                 const rampMat = new THREE.MeshStandardMaterial({
                     color: 0x3a5a8a,
                     roughness: 0.3,
@@ -1087,7 +1097,6 @@
                     mesh.receiveShadow = true;
                     scene.add(mesh);
                     obstacles.push(mesh);
-                    // add a small platform on top? just for visual
                 }
 
                 // ── Pillars ──
@@ -1112,16 +1121,32 @@
                     obstacles.push(mesh);
                 }
 
-                // ── Bloom Post-Processing ──
-                const renderPass = new THREE.RenderPass(scene, camera);
-                composer = new THREE.EffectComposer(renderer);
-                composer.addPass(renderPass);
+                // ── Post-Processing (Bloom) — HATA TOLERANSLI ──
+                try {
+                    // EffectComposer ve bağımlılıklarının global olarak yüklendiğini varsayıyoruz
+                    if (typeof THREE.EffectComposer !== 'undefined' &&
+                        typeof THREE.RenderPass !== 'undefined' &&
+                        typeof THREE.UnrealBloomPass !== 'undefined') {
 
-                bloomPass = new THREE.UnrealBloomPass(
-                    new THREE.Vector2(window.innerWidth, window.innerHeight),
-                    0.3, 0.2, 0.1
-                );
-                composer.addPass(bloomPass);
+                        const renderPass = new THREE.RenderPass(scene, camera);
+                        composer = new THREE.EffectComposer(renderer);
+                        composer.addPass(renderPass);
+
+                        bloomPass = new THREE.UnrealBloomPass(
+                            new THREE.Vector2(window.innerWidth, window.innerHeight),
+                            0.3, 0.2, 0.1
+                        );
+                        composer.addPass(bloomPass);
+
+                        console.log('✅ Bloom (UnrealBloomPass) etkinleştirildi.');
+                    } else {
+                        throw new Error('Post-processing sınıfları yüklenemedi.');
+                    }
+                } catch (e) {
+                    console.warn('⚠ Post-processing başlatılamadı, bloom devre dışı. Hata:', e.message);
+                    composer = null;
+                    bloomPass = null;
+                }
 
                 // ── Events ──
                 window.addEventListener('resize', () => {
@@ -1129,7 +1154,7 @@
                         const w = window.innerWidth,
                             h = window.innerHeight;
                         renderer.setSize(w, h);
-                        composer.setSize(w, h);
+                        if (composer) composer.setSize(w, h);
                         camera.aspect = w / h;
                         camera.updateProjectionMatrix();
                     }
@@ -1231,15 +1256,15 @@
                     if (q === 'high') {
                         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
                         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-                        bloomPass.strength = 0.35;
+                        if (bloomPass) bloomPass.strength = 0.35;
                     } else if (q === 'medium') {
                         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
                         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-                        bloomPass.strength = 0.25;
+                        if (bloomPass) bloomPass.strength = 0.25;
                     } else {
                         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1));
                         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-                        bloomPass.strength = 0.15;
+                        if (bloomPass) bloomPass.strength = 0.15;
                     }
                     saveSettings();
                 });
@@ -1959,9 +1984,13 @@
                 // Particles
                 updateParticles(delta);
 
-                // Render with bloom
+                // Render
                 if (renderer && scene && camera) {
-                    composer.render(delta);
+                    if (composer) {
+                        composer.render(delta);
+                    } else {
+                        renderer.render(scene, camera);
+                    }
                 }
             }
 
