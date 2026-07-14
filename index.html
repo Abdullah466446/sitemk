@@ -613,6 +613,7 @@
     <script>
         // ═══════════════════════════════════════════════════════════
         //  NEON ARENA — FULL GAME IMPLEMENTATION
+        //  Tüm değişkenler global, init sayfa yüklenirken çalışır.
         // ═══════════════════════════════════════════════════════════
 
         (function() {
@@ -640,7 +641,7 @@
             const crosshair = document.getElementById('crosshair');
             const hitmarker = document.getElementById('hitmarker');
 
-            // ─── GAME STATE ──────────────────────────────────────
+            // ─── GLOBAL THREE.JS DEĞİŞKENLERİ ──────────────────
             let scene, camera, renderer, controls;
             let localPlayer, remotePlayer; // THREE.Group
             let localGunMesh;
@@ -665,7 +666,7 @@
             const JUMP_SPEED = 8.0;
             const PLAYER_HEIGHT = 1.7;
             const MOVE_SPEED = 7.5;
-            const GROUND_Y = 0;
+            const ARENA_SIZE = 28;
 
             // Shooting
             let shootCooldown = 0;
@@ -695,7 +696,7 @@
             let _lastSend = 0;
             let respawnTimer = null;
             let obstacles = [];
-            const ARENA_SIZE = 28;
+            let threeInitialized = false;
 
             // ─── UI HELPERS ──────────────────────────────────────
             function setStatus(text, type) {
@@ -733,7 +734,7 @@
                 netStatus.className = ok ? '' : 'disconnected';
             }
 
-            // ─── THREE.JS SCENE SETUP ──────────────────────────
+            // ─── THREE.JS KURULUMU (SAYFA YÜKLENİRKEN) ─────────
 
             function createParticleTexture() {
                 if (particleTexture) return particleTexture;
@@ -751,8 +752,8 @@
                 return particleTexture;
             }
 
-            function initScene() {
-                if (scene) return;
+            function initThreeJS() {
+                if (threeInitialized) return;
 
                 scene = new THREE.Scene();
                 scene.background = new THREE.Color(0x080818);
@@ -957,13 +958,15 @@
                 document.addEventListener('pointerlockchange', () => {
                     if (!document.pointerLockElement && isPlaying && !isPaused && !startOverlay.classList.contains(
                             'visible') && !pauseOverlay.classList.contains('visible')) {
-                        // Lock lost — show pause?
                         if (!localDead) {
                             pauseOverlay.classList.add('visible');
                             isPaused = true;
                         }
                     }
                 });
+
+                threeInitialized = true;
+                console.log('✅ Three.js kurulumu tamamlandı.');
             }
 
             // ─── PLAYER MESH ─────────────────────────────────────
@@ -1013,7 +1016,7 @@
                 tip.rotation.x = Math.PI / 2;
                 group.add(tip);
 
-                // Shoulder pads (for style)
+                // Shoulder pads
                 const padMat = new THREE.MeshStandardMaterial({
                     color: 0x334466,
                     roughness: 0.4,
@@ -1083,7 +1086,7 @@
                 const pos = getRandomSafePosition();
                 localPlayer.position.copy(pos);
                 camera.position.set(pos.x, PLAYER_HEIGHT, pos.z);
-                controls.target.set(pos.x, PLAYER_HEIGHT, pos.z);
+                if (controls) controls.target.set(pos.x, PLAYER_HEIGHT, pos.z);
                 velocityY = 0;
                 if (conn && conn.open) {
                     sendState();
@@ -1185,7 +1188,6 @@
                 if (!isPlaying || localDead || shootCooldown > 0 || !controls || !controls.isLocked) return;
                 shootCooldown = SHOOT_DELAY;
 
-                // Recoil
                 recoilVelocity = -0.055;
 
                 const raycaster = new THREE.Raycaster();
@@ -1205,7 +1207,6 @@
                         updateEnemyHealthUI();
                         showHitmarker();
 
-                        // Blood particles
                         spawnParticles(hitPoint, 0xff2244, 28, 5.5, 0.85, 0.09);
 
                         if (conn && conn.open) {
@@ -1223,7 +1224,6 @@
                             if (conn && conn.open) {
                                 conn.send({ type: 'remoteDead' });
                             }
-                            // Remote respawn after delay
                             setTimeout(() => { respawnRemote(); }, 2500);
                         }
 
@@ -1238,7 +1238,6 @@
                     createLaser(camera.position, far);
                 }
 
-                // Send shoot event for remote visual
                 if (conn && conn.open) {
                     const origin = camera.position.clone();
                     const dir = new THREE.Vector3(0, 0, -1);
@@ -1303,12 +1302,9 @@
                     case 'remoteDead':
                         remoteDead = true;
                         updateEnemyHealthUI();
-                        // We might get this if we killed them, but we already handle it.
-                        // Just ensure respawn.
                         setTimeout(() => { respawnRemote(); }, 2500);
                         break;
                     case 'shoot':
-                        // Visual only
                         if (data.origin && data.dir) {
                             const origin = new THREE.Vector3(data.origin.x, data.origin.y, data.origin.z);
                             const dir = new THREE.Vector3(data.dir.x, data.dir.y, data.dir.z);
@@ -1327,11 +1323,23 @@
                 }
             }
 
-            // ─── CONNECTION ──────────────────────────────────────
+            // ─── CONNECTION & GAME START ────────────────────────
 
             function startGame(hostMode, peerId = null) {
+                // ★ KRİTİK: Three.js kurulumu yapılmış mı kontrol et
+                if (!threeInitialized) {
+                    console.error('❌ Three.js başlatılmamış! initThreeJS() çalıştırılmamış.');
+                    setStatus('❌ Sistem hatası: Three.js yüklenmedi', 'error');
+                    return;
+                }
+                // ★ KRİTİK: camera ve controls mevcut mu?
+                if (!camera || !controls) {
+                    console.error('❌ Kamera veya kontroller mevcut değil!');
+                    setStatus('❌ Sistem hatası: Kamera başlatılamadı', 'error');
+                    return;
+                }
+
                 isHost = hostMode;
-                initScene();
 
                 // Local player
                 const color = isHost ? 0x44aaff : 0xff6644;
@@ -1389,10 +1397,6 @@
                         conn.on('data', handleData);
                         conn.on('close', () => disconnectGame());
                         setNetStatus('🔗 Oyuncu bağlandı!', true);
-                        // Start the game immediately when someone connects
-                        if (startOverlay.classList.contains('visible')) {
-                            // Wait for player to click start
-                        }
                         sendState();
                     });
                     peer.on('error', (err) => {
@@ -1424,7 +1428,7 @@
                     });
                 }
 
-                // Start animation loop
+                // Animation loop başlat
                 animate();
             }
 
@@ -1446,29 +1450,15 @@
                 setStatus('⛔ Bağlantı koptu', 'error');
                 setNetStatus('⚠ BAĞLANTI KOPTU', false);
 
-                // Cleanup scene
-                if (scene) {
-                    while (scene.children.length > 0) {
-                        const c = scene.children[0];
-                        if (c.geometry) c.geometry.dispose();
-                        if (c.material) c.material.dispose();
-                        scene.remove(c);
-                    }
-                    scene = null;
-                }
-                if (renderer) {
-                    renderer.dispose();
-                    renderer.domElement.remove();
-                    renderer = null;
-                }
-                controls = null;
-                localPlayer = null;
-                remotePlayer = null;
+                // Oyuncu nesnelerini temizle (sahne kalır)
+                if (localPlayer) { scene.remove(localPlayer);
+                    localPlayer = null; }
+                if (remotePlayer) { scene.remove(remotePlayer);
+                    remotePlayer = null; }
                 localGunMesh = null;
-                obstacles = [];
                 particles.forEach(p => {
-                    scene && scene.remove(p.mesh);
-                    p.mesh && p.mesh.material && p.mesh.material.dispose();
+                    scene.remove(p.mesh);
+                    p.mesh.material.dispose();
                 });
                 particles = [];
                 clearTimeout(respawnTimer);
@@ -1482,7 +1472,7 @@
 
                 const delta = Math.min(clock.getDelta(), 0.05);
 
-                // ─ Cooldowns ─
+                // Cooldowns
                 if (shootCooldown > 0) shootCooldown -= delta;
                 if (laserTimer > 0) {
                     laserTimer -= delta;
@@ -1494,7 +1484,7 @@
                     }
                 }
 
-                // ─ Movement ─
+                // Movement
                 if (!localDead && !isPaused && controls && controls.isLocked) {
                     const forward = new THREE.Vector3(0, 0, -1);
                     forward.applyQuaternion(camera.quaternion);
@@ -1513,7 +1503,6 @@
                     if (keys.d) moveVec.add(right);
                     if (moveVec.length() > 0) moveVec.normalize().multiplyScalar(MOVE_SPEED);
 
-                    // Jump
                     if (keys.space && velocityY === 0) {
                         velocityY = JUMP_SPEED;
                     }
@@ -1529,7 +1518,6 @@
                         velocityY = 0;
                     }
 
-                    // Collision (horizontal only)
                     const testX = newPos.clone();
                     testX.y = PLAYER_HEIGHT;
                     if (canMoveTo(testX)) camera.position.x = newPos.x;
@@ -1545,7 +1533,7 @@
                         localPlayer.position.y = 0;
                     }
 
-                    // ─ Sway ─
+                    // Sway
                     const isMoving = (keys.w || keys.a || keys.s || keys.d);
                     if (isMoving) {
                         swayAngle += delta * 7;
@@ -1556,7 +1544,7 @@
                         swayOffset.y *= 0.92;
                     }
 
-                    // ─ Recoil ─
+                    // Recoil
                     if (recoilVelocity !== 0) {
                         recoilPitch += recoilVelocity;
                         recoilVelocity *= 0.82;
@@ -1573,14 +1561,13 @@
                         localGunMesh.rotation.x = recoilPitch * 0.6;
                     }
 
-                    // ─ Send state ─
                     if (conn && conn.open && performance.now() - _lastSend > 35) {
                         sendState();
                         _lastSend = performance.now();
                     }
                 }
 
-                // ─ Remote interpolation ─
+                // Remote interpolation
                 if (remotePlayer) {
                     remotePlayer.position.lerp(remoteTargetPos, LERP_FACTOR);
 
@@ -1597,10 +1584,8 @@
                     }
                 }
 
-                // ─ Particles ─
                 updateParticles(delta);
 
-                // ─ Render ─
                 if (renderer && scene && camera) {
                     renderer.render(scene, camera);
                 }
@@ -1608,14 +1593,12 @@
 
             // ─── UI EVENT BINDINGS ──────────────────────────────
 
-            // Host
             btnHost.addEventListener('click', () => {
                 joinArea.classList.remove('visible');
                 setStatus('⏳ Oda kuruluyor...', '');
                 startGame(true);
             });
 
-            // Join - show input
             btnJoin.addEventListener('click', () => {
                 if (joinArea.classList.contains('visible')) {
                     joinArea.classList.remove('visible');
@@ -1625,7 +1608,6 @@
                 }
             });
 
-            // Connect
             btnConnect.addEventListener('click', () => {
                 const id = joinInput.value.trim();
                 if (!id) {
@@ -1637,23 +1619,23 @@
                 startGame(false, id);
             });
 
-            // Enter key on join input
             joinInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') btnConnect.click();
             });
 
-            // ─── CLEANUP ─────────────────────────────────────────
+            // ─── SAYFA YÜKLENİRKEN THREE.JS KURULUMU ────────────
+
+            window.addEventListener('load', () => {
+                console.log('🔄 Sayfa yüklendi, Three.js kuruluyor...');
+                initThreeJS();
+                setStatus('⟳ Eşleşme bekleniyor...', '');
+            });
 
             window.addEventListener('beforeunload', () => {
                 if (peer) peer.destroy();
             });
 
-            // ─── INIT ────────────────────────────────────────────
-
-            setStatus('⟳ Eşleşme bekleniyor...', '');
-
-            console.log('⚡ NEON ARENA loaded. Ready for battle!');
-
+            console.log('⚡ NEON ARENA loaded. Waiting for page load...');
         })();
     </script>
 </body>
