@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NEON ARENA · 3D FPS</title>
     <style>
-        /* ───────────── RESET & BASE ───────────── */
+        /* ----- RESET & BASE ----- */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            user-select: none;
         }
         body {
             overflow: hidden;
@@ -19,130 +20,134 @@
             height: 100vh;
             width: 100vw;
         }
-        /* ───────────── LOBBY ───────────── */
-        #lobby {
+        /* ----- MAIN MENU (lobby) ----- */
+        #menu {
             position: fixed;
             inset: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: rgba(10, 10, 18, 0.92);
-            backdrop-filter: blur(12px);
-            z-index: 100;
-            transition: opacity 0.6s ease, visibility 0.6s ease;
+            background: rgba(10, 10, 18, 0.94);
+            backdrop-filter: blur(16px);
+            z-index: 200;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
         }
-        #lobby.hidden {
+        #menu.hidden {
             opacity: 0;
             visibility: hidden;
             pointer-events: none;
         }
-        .lobby-card {
-            background: rgba(20, 30, 50, 0.6);
-            border: 1px solid rgba(0, 200, 255, 0.25);
-            border-radius: 28px;
+        .menu-card {
+            background: rgba(20, 30, 50, 0.5);
+            border: 1px solid rgba(0, 200, 255, 0.2);
+            border-radius: 32px;
             padding: 48px 56px;
-            max-width: 460px;
-            width: 90%;
+            max-width: 480px;
+            width: 92%;
             backdrop-filter: blur(8px);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(0, 180, 255, 0.05);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8), 0 0 60px rgba(0, 180, 255, 0.03);
             text-align: center;
         }
-        .lobby-title {
-            font-size: 3.2rem;
+        .menu-title {
+            font-size: 3.4rem;
             font-weight: 800;
-            letter-spacing: 4px;
+            letter-spacing: 6px;
             background: linear-gradient(135deg, #00e5ff, #7c4dff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
-        .lobby-sub {
-            font-size: 0.95rem;
+        .menu-sub {
+            font-size: 0.9rem;
             color: #8899bb;
-            letter-spacing: 6px;
+            letter-spacing: 8px;
             text-transform: uppercase;
-            margin-bottom: 32px;
-        }
-        .lobby-status {
-            font-size: 0.85rem;
-            color: #66aaff;
-            background: rgba(0, 100, 255, 0.08);
-            border: 1px solid rgba(0, 150, 255, 0.15);
-            border-radius: 40px;
-            padding: 8px 20px;
-            display: inline-block;
             margin-bottom: 28px;
-            min-width: 200px;
+        }
+        .menu-status {
+            font-size: 0.8rem;
+            color: #66aaff;
+            background: rgba(0, 100, 255, 0.06);
+            border: 1px solid rgba(0, 150, 255, 0.12);
+            border-radius: 40px;
+            padding: 6px 18px;
+            display: inline-block;
+            margin-bottom: 24px;
+            min-width: 180px;
             transition: all 0.3s;
         }
-        .lobby-status.error {
+        .menu-status.error {
             color: #ff5566;
-            border-color: rgba(255, 80, 80, 0.3);
-            background: rgba(255, 0, 0, 0.06);
+            border-color: rgba(255, 80, 80, 0.25);
+            background: rgba(255, 0, 0, 0.05);
         }
-        .lobby-status.success {
+        .menu-status.success {
             color: #66ff99;
-            border-color: rgba(0, 255, 120, 0.25);
-            background: rgba(0, 255, 100, 0.06);
+            border-color: rgba(0, 255, 120, 0.2);
+            background: rgba(0, 255, 100, 0.04);
         }
         .btn-group {
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            margin: 8px 0 16px;
+            gap: 10px;
+            margin: 6px 0 14px;
         }
         .btn {
             padding: 14px 20px;
-            font-size: 1.05rem;
+            font-size: 1rem;
             font-weight: 600;
             border: none;
             border-radius: 14px;
             cursor: pointer;
             transition: all 0.2s ease;
             letter-spacing: 0.5px;
-            background: rgba(30, 50, 80, 0.6);
+            background: rgba(30, 50, 80, 0.5);
             color: #c0d0ff;
-            border: 1px solid rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.04);
         }
         .btn:hover {
             transform: translateY(-2px);
-            background: rgba(40, 70, 120, 0.7);
-            border-color: rgba(0, 200, 255, 0.2);
+            background: rgba(40, 70, 120, 0.6);
+            border-color: rgba(0, 200, 255, 0.15);
         }
         .btn-primary {
             background: linear-gradient(135deg, #0066ff, #7c4dff);
             color: #fff;
             border: none;
-            box-shadow: 0 4px 20px rgba(0, 100, 255, 0.25);
+            box-shadow: 0 4px 24px rgba(0, 100, 255, 0.2);
         }
         .btn-primary:hover {
             background: linear-gradient(135deg, #0077ff, #8a5dff);
-            box-shadow: 0 6px 30px rgba(0, 100, 255, 0.35);
+            box-shadow: 0 6px 32px rgba(0, 100, 255, 0.3);
             border-color: transparent;
         }
         .btn-secondary {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
         }
         .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.07);
+        }
+        .btn-small {
+            padding: 10px 16px;
+            font-size: 0.85rem;
         }
         #join-area {
             display: none;
             flex-direction: column;
-            gap: 10px;
-            margin-top: 6px;
+            gap: 8px;
+            margin-top: 4px;
         }
         #join-area.visible {
             display: flex;
         }
         #join-input {
-            padding: 14px 18px;
-            border-radius: 14px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            background: rgba(0, 0, 0, 0.4);
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(0, 0, 0, 0.3);
             color: #fff;
             font-size: 1rem;
             text-align: center;
@@ -151,69 +156,82 @@
         }
         #join-input:focus {
             border-color: #0066ff;
-            box-shadow: 0 0 20px rgba(0, 100, 255, 0.1);
-        }
-        #join-input::placeholder {
-            color: #445566;
+            box-shadow: 0 0 20px rgba(0, 100, 255, 0.05);
         }
         .host-id-box {
-            margin-top: 16px;
-            padding: 14px 20px;
-            background: rgba(0, 0, 0, 0.4);
+            margin-top: 14px;
+            padding: 12px 16px;
+            background: rgba(0, 0, 0, 0.3);
             border-radius: 14px;
-            border: 1px solid rgba(0, 200, 255, 0.15);
+            border: 1px solid rgba(0, 200, 255, 0.1);
             display: none;
-            font-size: 0.95rem;
-            word-break: break-all;
+            font-size: 0.9rem;
         }
         .host-id-box.visible {
             display: block;
-        }
-        .host-id-box strong {
-            color: #00e5ff;
-            font-weight: 700;
         }
         .host-id-box .id {
             color: #fff;
             font-family: 'Courier New', monospace;
             letter-spacing: 1px;
             background: rgba(0, 0, 0, 0.3);
-            padding: 4px 12px;
-            border-radius: 8px;
+            padding: 2px 12px;
+            border-radius: 6px;
             display: inline-block;
-            margin-top: 6px;
+            margin-top: 4px;
             user-select: all;
         }
-        .lobby-divider {
+        .menu-divider {
             height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(100, 200, 255, 0.15), transparent);
-            margin: 18px 0;
+            background: linear-gradient(90deg, transparent, rgba(100, 200, 255, 0.08), transparent);
+            margin: 16px 0;
         }
-        /* ───────────── START OVERLAY ───────────── */
+        .settings-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 0;
+            font-size: 0.85rem;
+            color: #aabbdd;
+        }
+        .settings-row input[type="range"] {
+            width: 120px;
+            accent-color: #0066ff;
+            background: transparent;
+        }
+        .settings-row select {
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 8px;
+            padding: 4px 8px;
+            font-size: 0.8rem;
+        }
+        /* ----- START OVERLAY ----- */
         #start-overlay {
             position: fixed;
             inset: 0;
             display: none;
             align-items: center;
             justify-content: center;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(6px);
-            z-index: 50;
+            z-index: 100;
             cursor: pointer;
         }
         #start-overlay.visible {
             display: flex;
         }
-        #start-overlay .start-box {
+        #start-overlay .box {
             text-align: center;
-            padding: 40px 60px;
+            padding: 36px 56px;
             border-radius: 28px;
-            border: 1px solid rgba(0, 200, 255, 0.2);
-            background: rgba(10, 15, 30, 0.8);
+            border: 1px solid rgba(0, 200, 255, 0.15);
+            background: rgba(10, 15, 30, 0.75);
             backdrop-filter: blur(8px);
             animation: pulse-glow 2s ease-in-out infinite;
         }
-        #start-overlay .start-box h2 {
+        #start-overlay .box h2 {
             font-size: 2.4rem;
             font-weight: 700;
             background: linear-gradient(135deg, #00e5ff, #7c4dff);
@@ -221,66 +239,97 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        #start-overlay .start-box p {
+        #start-overlay .box p {
             color: #8899bb;
-            margin-top: 8px;
-            font-size: 1rem;
+            margin-top: 6px;
+            font-size: 0.95rem;
             letter-spacing: 2px;
         }
         @keyframes pulse-glow {
             0%,
             100% {
-                box-shadow: 0 0 30px rgba(0, 100, 255, 0.05);
+                box-shadow: 0 0 30px rgba(0, 100, 255, 0.03);
             }
             50% {
-                box-shadow: 0 0 60px rgba(0, 100, 255, 0.15);
+                box-shadow: 0 0 60px rgba(0, 100, 255, 0.12);
             }
         }
-        /* ───────────── PAUSE OVERLAY ───────────── */
+        /* ----- PAUSE OVERLAY ----- */
         #pause-overlay {
             position: fixed;
             inset: 0;
             display: none;
             align-items: center;
             justify-content: center;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.4);
             backdrop-filter: blur(4px);
-            z-index: 40;
+            z-index: 80;
             cursor: pointer;
         }
         #pause-overlay.visible {
             display: flex;
         }
-        #pause-overlay .pause-box {
+        #pause-overlay .box {
             text-align: center;
-            padding: 32px 48px;
+            padding: 28px 44px;
             border-radius: 24px;
-            background: rgba(10, 15, 30, 0.85);
-            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(10, 15, 30, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.04);
         }
-        #pause-overlay .pause-box h2 {
+        #pause-overlay .box h2 {
             font-size: 2rem;
             font-weight: 600;
             color: #aabbdd;
             letter-spacing: 4px;
         }
-        #pause-overlay .pause-box p {
+        #pause-overlay .box p {
             color: #667799;
-            font-size: 0.9rem;
-            margin-top: 6px;
+            font-size: 0.85rem;
+            margin-top: 4px;
         }
-        /* ───────────── HUD ───────────── */
+        /* ----- DEATH OVERLAY ----- */
+        #death-overlay {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 60;
+            pointer-events: none;
+        }
+        #death-overlay.visible {
+            display: flex;
+        }
+        #death-overlay span {
+            font-size: 4.5rem;
+            font-weight: 900;
+            color: #ff2244;
+            text-shadow: 0 0 60px rgba(255, 34, 68, 0.5);
+            animation: death-pulse 0.8s ease-in-out infinite alternate;
+        }
+        @keyframes death-pulse {
+            0% {
+                transform: scale(1);
+                opacity: 0.6;
+            }
+            100% {
+                transform: scale(1.06);
+                opacity: 1;
+            }
+        }
+        /* ----- HUD ----- */
         #hud {
             position: fixed;
             inset: 0;
             pointer-events: none;
-            z-index: 10;
+            z-index: 20;
             display: none;
         }
         #hud.visible {
             display: block;
         }
-        /* Crosshair */
         #crosshair {
             position: absolute;
             top: 50%;
@@ -288,10 +337,9 @@
             transform: translate(-50%, -50%);
             font-size: 26px;
             font-weight: 100;
-            color: rgba(0, 220, 255, 0.7);
-            text-shadow: 0 0 12px rgba(0, 180, 255, 0.2);
+            color: rgba(0, 220, 255, 0.6);
+            text-shadow: 0 0 12px rgba(0, 180, 255, 0.1);
             pointer-events: none;
-            transition: opacity 0.1s;
         }
         #crosshair::after {
             content: '';
@@ -300,11 +348,10 @@
             left: 50%;
             width: 22px;
             height: 2px;
-            background: rgba(0, 220, 255, 0.15);
+            background: rgba(0, 220, 255, 0.12);
             transform: translate(-50%, -50%) rotate(90deg);
             border-radius: 2px;
         }
-        /* Hitmarker */
         #hitmarker {
             position: absolute;
             top: 50%;
@@ -315,97 +362,97 @@
             color: #ff2244;
             opacity: 0;
             pointer-events: none;
-            text-shadow: 0 0 40px rgba(255, 34, 68, 0.6);
+            text-shadow: 0 0 40px rgba(255, 34, 68, 0.4);
             transition: opacity 0s;
         }
         #hitmarker.show {
             opacity: 1;
-            transition: opacity 0s;
         }
         #hitmarker.hide {
             opacity: 0;
-            transition: opacity 0.15s ease-out;
+            transition: opacity 0.12s ease-out;
         }
-        /* Health */
-        #health-container {
+        /* Health & Ammo */
+        #hud-left {
             position: absolute;
-            bottom: 40px;
-            left: 40px;
-            width: 220px;
+            bottom: 36px;
+            left: 36px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 180px;
         }
-        #health-label {
-            font-size: 0.7rem;
+        .hud-label {
+            font-size: 0.65rem;
             letter-spacing: 3px;
             color: #66ccff;
-            text-shadow: 0 0 12px rgba(0, 180, 255, 0.2);
-            margin-bottom: 4px;
+            text-shadow: 0 0 12px rgba(0, 180, 255, 0.1);
             font-weight: 600;
         }
-        #health-bg {
+        .hud-bar-bg {
             width: 100%;
             height: 14px;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(0, 0, 0, 0.5);
             border-radius: 20px;
-            border: 1px solid rgba(0, 200, 255, 0.2);
+            border: 1px solid rgba(0, 200, 255, 0.12);
             overflow: hidden;
-            box-shadow: 0 0 20px rgba(0, 100, 255, 0.05);
+            box-shadow: 0 0 20px rgba(0, 100, 255, 0.03);
         }
-        #health-fill {
+        .hud-bar-fill {
             height: 100%;
             width: 100%;
             background: linear-gradient(90deg, #00e5ff, #7c4dff);
             border-radius: 20px;
             transition: width 0.2s ease;
         }
-        /* Enemy Health */
-        #enemy-health-container {
+        .hud-ammo {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: 1px;
+            margin-top: 4px;
+        }
+        .hud-ammo span {
+            color: #8899bb;
+            font-weight: 400;
+            font-size: 0.9rem;
+        }
+        /* Enemy health */
+        #hud-right {
             position: absolute;
             top: 30px;
-            right: 40px;
-            width: 180px;
+            right: 36px;
+            text-align: right;
+            min-width: 140px;
+        }
+        #hud-right .hud-label {
+            color: #ff6688;
             text-align: right;
         }
-        #enemy-health-label {
-            font-size: 0.65rem;
-            letter-spacing: 3px;
-            color: #ff6688;
-            text-shadow: 0 0 12px rgba(255, 80, 80, 0.15);
-            margin-bottom: 3px;
-            font-weight: 600;
+        #hud-right .hud-bar-bg {
+            border-color: rgba(255, 80, 80, 0.15);
         }
-        #enemy-health-bg {
-            width: 100%;
-            height: 12px;
-            background: rgba(0, 0, 0, 0.6);
-            border-radius: 20px;
-            border: 1px solid rgba(255, 80, 80, 0.2);
-            overflow: hidden;
-        }
-        #enemy-health-fill {
-            height: 100%;
-            width: 100%;
+        #hud-right .hud-bar-fill {
             background: linear-gradient(90deg, #ff2244, #ff6644);
-            border-radius: 20px;
-            transition: width 0.25s ease;
         }
         /* Scoreboard */
         #scoreboard {
             position: absolute;
             top: 30px;
-            left: 40px;
-            background: rgba(0, 0, 0, 0.55);
+            left: 36px;
+            background: rgba(0, 0, 0, 0.4);
             backdrop-filter: blur(6px);
-            border: 1px solid rgba(0, 200, 255, 0.08);
+            border: 1px solid rgba(0, 200, 255, 0.06);
             border-radius: 14px;
-            padding: 12px 22px;
-            min-width: 140px;
+            padding: 10px 20px;
+            min-width: 130px;
             pointer-events: none;
         }
         #scoreboard .row {
             display: flex;
             justify-content: space-between;
-            padding: 3px 0;
-            font-size: 0.85rem;
+            padding: 2px 0;
+            font-size: 0.8rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.03);
         }
         #scoreboard .row:last-child {
@@ -425,93 +472,67 @@
             color: #fff;
             font-weight: 700;
         }
-        /* Status */
-        #net-status {
+        /* Status & FPS */
+        #hud-status {
             position: absolute;
-            bottom: 40px;
-            right: 40px;
-            font-size: 0.75rem;
-            padding: 6px 16px;
+            bottom: 36px;
+            right: 36px;
+            font-size: 0.7rem;
+            padding: 4px 14px;
             border-radius: 30px;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.4);
             backdrop-filter: blur(4px);
-            border: 1px solid rgba(0, 255, 120, 0.15);
+            border: 1px solid rgba(0, 255, 120, 0.08);
             color: #66ff99;
             pointer-events: none;
-        }
-        #net-status.disconnected {
-            color: #ff5566;
-            border-color: rgba(255, 80, 80, 0.15);
-        }
-        /* ───────────── DEATH OVERLAY ───────────── */
-        #death-overlay {
-            position: fixed;
-            inset: 0;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(4px);
-            z-index: 30;
-            pointer-events: none;
-        }
-        #death-overlay.visible {
             display: flex;
+            gap: 16px;
         }
-        #death-overlay span {
-            font-size: 4.5rem;
-            font-weight: 900;
-            color: #ff2244;
-            text-shadow: 0 0 60px rgba(255, 34, 68, 0.6);
-            animation: death-pulse 0.8s ease-in-out infinite alternate;
+        #hud-status .fps {
+            color: #aabbdd;
         }
-        @keyframes death-pulse {
-            0% {
-                transform: scale(1);
-                opacity: 0.7;
-            }
-            100% {
-                transform: scale(1.06);
-                opacity: 1;
-            }
+        #hud-status.disconnected {
+            color: #ff5566;
+            border-color: rgba(255, 80, 80, 0.1);
         }
-        /* ───────────── RESPONSIVE ───────────── */
+        /* ----- RESPONSIVE ----- */
         @media (max-width: 600px) {
-            .lobby-card {
-                padding: 32px 24px;
+            .menu-card {
+                padding: 28px 20px;
             }
-            .lobby-title {
-                font-size: 2.2rem;
+            .menu-title {
+                font-size: 2.4rem;
             }
-            #health-container {
-                left: 20px;
-                bottom: 24px;
-                width: 160px;
+            #hud-left {
+                left: 18px;
+                bottom: 20px;
+                min-width: 140px;
             }
-            #enemy-health-container {
-                right: 20px;
-                top: 20px;
-                width: 130px;
-            }
-            #scoreboard {
-                left: 20px;
-                top: 20px;
-                padding: 8px 14px;
+            #hud-right {
+                right: 18px;
+                top: 18px;
                 min-width: 100px;
             }
+            #scoreboard {
+                left: 18px;
+                top: 18px;
+                padding: 6px 12px;
+                min-width: 90px;
+            }
             #scoreboard .row {
-                font-size: 0.7rem;
-            }
-            #net-status {
-                right: 20px;
-                bottom: 24px;
                 font-size: 0.65rem;
-                padding: 4px 12px;
             }
-            #start-overlay .start-box {
-                padding: 28px 32px;
+            #hud-status {
+                right: 18px;
+                bottom: 20px;
+                font-size: 0.6rem;
+                padding: 3px 10px;
+                gap: 8px;
             }
-            #start-overlay .start-box h2 {
+            #start-overlay .box {
+                padding: 24px 28px;
+            }
+            #start-overlay .box h2 {
                 font-size: 1.6rem;
             }
             #death-overlay span {
@@ -523,75 +544,108 @@
             #hitmarker {
                 font-size: 32px;
             }
+            .settings-row input[type="range"] {
+                width: 80px;
+            }
         }
     </style>
 </head>
 <body>
 
-    <!-- ═══════════ LOBBY ═══════════ -->
-    <div id="lobby">
-        <div class="lobby-card">
-            <div class="lobby-title">NEON ARENA</div>
-            <div class="lobby-sub">⚡ 3D FPS · P2P</div>
-            <div id="lobby-status" class="lobby-status">⟳ Eşleşme bekleniyor...</div>
+    <!-- ═══════ MAIN MENU ═══════ -->
+    <div id="menu">
+        <div class="menu-card">
+            <div class="menu-title">NEON ARENA</div>
+            <div class="menu-sub">⚡ 3D FPS · P2P</div>
+            <div id="menu-status" class="menu-status">⟳ Eşleşme bekleniyor...</div>
 
             <div class="btn-group">
                 <button class="btn btn-primary" id="btn-host">🎮 Oda Kur (Host)</button>
                 <button class="btn btn-secondary" id="btn-join">🔗 Odaya Katıl</button>
                 <div id="join-area">
                     <input id="join-input" type="text" placeholder="Host ID'sini yapıştır...">
-                    <button class="btn btn-primary" id="btn-connect" style="padding:12px;">Bağlan</button>
+                    <button class="btn btn-primary btn-small" id="btn-connect">Bağlan</button>
                 </div>
             </div>
 
-            <div class="lobby-divider"></div>
+            <div class="menu-divider"></div>
 
             <div id="host-id-box" class="host-id-box">
-                <div style="color:#8899bb;font-size:0.8rem;letter-spacing:2px;">📡 ODANIZIN ID'Sİ</div>
+                <div style="color:#8899bb;font-size:0.75rem;letter-spacing:2px;">📡 ODANIZIN ID'Sİ</div>
                 <div class="id" id="host-id-display">—</div>
-                <div style="color:#556688;font-size:0.7rem;margin-top:6px;">Bu kodu arkadaşınıza gönderin</div>
+                <div style="color:#445566;font-size:0.65rem;margin-top:4px;">Bu kodu arkadaşına gönder</div>
             </div>
 
-            <div style="margin-top:6px;font-size:0.7rem;color:#445566;letter-spacing:1px;">
+            <div class="menu-divider"></div>
+
+            <!-- Settings -->
+            <div style="text-align:left;font-size:0.8rem;color:#8899bb;padding:0 4px;">
+                <div class="settings-row">
+                    <span>🔊 Ses</span>
+                    <input type="range" id="volume-slider" min="0" max="100" value="60">
+                </div>
+                <div class="settings-row">
+                    <span>🖱 Hassasiyet</span>
+                    <input type="range" id="sensitivity-slider" min="1" max="20" value="10">
+                </div>
+                <div class="settings-row">
+                    <span>📐 FOV</span>
+                    <input type="range" id="fov-slider" min="60" max="100" value="75">
+                </div>
+                <div class="settings-row">
+                    <span>⚙ Kalite</span>
+                    <select id="quality-select">
+                        <option value="high">Yüksek</option>
+                        <option value="medium" selected>Orta</option>
+                        <option value="low">Düşük</option>
+                    </select>
+                </div>
+                <div class="settings-row" style="margin-top:6px;">
+                    <button class="btn btn-secondary btn-small" id="btn-fullscreen" style="padding:6px 14px;">⛶ Tam Ekran</button>
+                </div>
+            </div>
+
+            <div style="margin-top:12px;font-size:0.65rem;color:#334455;letter-spacing:1px;">
                 PeerJS · WebRTC · Gerçek zamanlı
             </div>
         </div>
     </div>
 
-    <!-- ═══════════ START OVERLAY ═══════════ -->
+    <!-- ═══════ START OVERLAY ═══════ -->
     <div id="start-overlay">
-        <div class="start-box">
+        <div class="box">
             <h2>▶ OYUNA BAŞLA</h2>
             <p>Ekrana tıkla ve fareyi kilitle</p>
         </div>
     </div>
 
-    <!-- ═══════════ PAUSE OVERLAY ═══════════ -->
+    <!-- ═══════ PAUSE OVERLAY ═══════ -->
     <div id="pause-overlay">
-        <div class="pause-box">
+        <div class="box">
             <h2>⏸ DURAKLATILDI</h2>
             <p>Devam etmek için tıkla</p>
         </div>
     </div>
 
-    <!-- ═══════════ DEATH OVERLAY ═══════════ -->
+    <!-- ═══════ DEATH OVERLAY ═══════ -->
     <div id="death-overlay">
         <span>💀 ÖLDÜN</span>
     </div>
 
-    <!-- ═══════════ HUD ═══════════ -->
+    <!-- ═══════ HUD ═══════ -->
     <div id="hud">
         <div id="crosshair">✚</div>
         <div id="hitmarker">✕</div>
 
-        <div id="health-container">
-            <div id="health-label">▸ CAN</div>
-            <div id="health-bg"><div id="health-fill" style="width:100%"></div></div>
+        <div id="hud-left">
+            <div class="hud-label">▸ CAN</div>
+            <div class="hud-bar-bg"><div class="hud-bar-fill" id="health-fill" style="width:100%"></div></div>
+            <div class="hud-ammo" id="ammo-display">30 <span>/ 30</span></div>
         </div>
 
-        <div id="enemy-health-container">
-            <div id="enemy-health-label">RAKİP ◂</div>
-            <div id="enemy-health-bg"><div id="enemy-health-fill" style="width:100%"></div></div>
+        <div id="hud-right">
+            <div class="hud-label">RAKİP ◂</div>
+            <div class="hud-bar-bg"><div class="hud-bar-fill" id="enemy-health-fill" style="width:100%"></div></div>
         </div>
 
         <div id="scoreboard">
@@ -599,10 +653,13 @@
             <div class="row"><span class="label enemy">RAKİP</span><span class="value" id="enemy-score">0 / 0</span></div>
         </div>
 
-        <div id="net-status">⚡ BAĞLANDI</div>
+        <div id="hud-status">
+            <span id="net-status">⚡ BAĞLANDI</span>
+            <span class="fps" id="fps-display">60 FPS</span>
+        </div>
     </div>
 
-    <!-- ═══════════ THREE.JS & PEERJS ═══════════ -->
+    <!-- ═══════ THREE.JS & PEERJS ═══════ -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js">
     </script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/PointerLockControls.js">
@@ -610,18 +667,28 @@
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js">
     </script>
 
+    <!-- ═══════ POST-PROCESSING (Bloom) ═══════ -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js">
+    </script>
+
     <script>
-        // ═══════════════════════════════════════════════════════════
-        //  NEON ARENA — FULL GAME IMPLEMENTATION
-        //  Tüm değişkenler global, init sayfa yüklenirken çalışır.
-        // ═══════════════════════════════════════════════════════════
+        // ════════════════════════════════════════════════════════════════
+        //  NEON ARENA — PROFESSIONAL 3D FPS
+        //  Tek HTML dosyası, tüm özellikler entegre.
+        // ════════════════════════════════════════════════════════════════
 
         (function() {
             'use strict';
 
             // ─── DOM REFS ──────────────────────────────────────────
-            const lobby = document.getElementById('lobby');
-            const lobbyStatus = document.getElementById('lobby-status');
+            const menu = document.getElementById('menu');
+            const menuStatus = document.getElementById('menu-status');
             const btnHost = document.getElementById('btn-host');
             const btnJoin = document.getElementById('btn-join');
             const joinArea = document.getElementById('join-area');
@@ -635,15 +702,47 @@
             const hud = document.getElementById('hud');
             const healthFill = document.getElementById('health-fill');
             const enemyHealthFill = document.getElementById('enemy-health-fill');
+            const ammoDisplay = document.getElementById('ammo-display');
             const myScoreEl = document.getElementById('my-score');
             const enemyScoreEl = document.getElementById('enemy-score');
             const netStatus = document.getElementById('net-status');
-            const crosshair = document.getElementById('crosshair');
+            const fpsDisplay = document.getElementById('fps-display');
             const hitmarker = document.getElementById('hitmarker');
 
-            // ─── GLOBAL THREE.JS DEĞİŞKENLERİ ──────────────────
-            let scene, camera, renderer, controls;
-            let localPlayer, remotePlayer; // THREE.Group
+            // Settings elements
+            const volumeSlider = document.getElementById('volume-slider');
+            const sensitivitySlider = document.getElementById('sensitivity-slider');
+            const fovSlider = document.getElementById('fov-slider');
+            const qualitySelect = document.getElementById('quality-select');
+            const btnFullscreen = document.getElementById('btn-fullscreen');
+
+            // ─── SETTINGS (localStorage) ─────────────────────────
+            function loadSettings() {
+                try {
+                    const data = JSON.parse(localStorage.getItem('neon_arena_settings'));
+                    if (data) {
+                        volumeSlider.value = data.volume || 60;
+                        sensitivitySlider.value = data.sensitivity || 10;
+                        fovSlider.value = data.fov || 75;
+                        qualitySelect.value = data.quality || 'medium';
+                    }
+                } catch (_) { /* ignore */ }
+            }
+
+            function saveSettings() {
+                try {
+                    localStorage.setItem('neon_arena_settings', JSON.stringify({
+                        volume: parseFloat(volumeSlider.value),
+                        sensitivity: parseFloat(sensitivitySlider.value),
+                        fov: parseFloat(fovSlider.value),
+                        quality: qualitySelect.value,
+                    }));
+                } catch (_) { /* ignore */ }
+            }
+
+            // ─── GLOBAL STATE ────────────────────────────────────
+            let scene, camera, renderer, controls, composer, bloomPass;
+            let localPlayer, remotePlayer;
             let localGunMesh;
             let isHost = false;
             let peer = null;
@@ -659,22 +758,37 @@
             let remoteKills = 0;
             let remoteDeaths = 0;
 
+            // Ammo / Weapon
+            const MAX_AMMO = 30;
+            const MAX_MAG = 90;
+            let currentAmmo = MAX_AMMO;
+            let reserveAmmo = MAX_MAG;
+            let isReloading = false;
+            let reloadTimer = 0;
+            const RELOAD_TIME = 1.8;
+            let shootCooldown = 0;
+            const SHOOT_DELAY = 0.09;
+            const SPREAD = 0.025;
+            const DAMAGE = 25;
+
             // Movement
-            const keys = { w: false, a: false, s: false, d: false, space: false };
+            const keys = { w: false, a: false, s: false, d: false, space: false, shift: false, ctrl: false };
             let velocityY = 0;
             const GRAVITY = -24;
             const JUMP_SPEED = 8.0;
             const PLAYER_HEIGHT = 1.7;
-            const MOVE_SPEED = 7.5;
+            const BASE_SPEED = 7.5;
+            const SPRINT_MULT = 1.4;
+            const CROUCH_MULT = 0.5;
+            let currentSpeed = BASE_SPEED;
             const ARENA_SIZE = 28;
 
-            // Shooting
-            let shootCooldown = 0;
-            const SHOOT_DELAY = 0.12;
+            // Recoil & Sway
             let recoilPitch = 0;
             let recoilVelocity = 0;
             let swayAngle = 0;
             let swayOffset = { x: 0, y: 0 };
+            let weaponBob = 0;
 
             // Laser
             let laserLine = null;
@@ -682,7 +796,7 @@
 
             // Particles
             let particles = [];
-            const MAX_PARTICLES = 400;
+            const MAX_PARTICLES = 600;
             let particleTexture = null;
 
             // Network smoothing
@@ -691,19 +805,27 @@
             let remoteTargetPitch = 0;
             const LERP_FACTOR = 0.22;
 
+            // Audio (Web Audio)
+            let audioCtx = null;
+            let masterGain = null;
+
             // Misc
             const clock = new THREE.Clock();
             let _lastSend = 0;
             let respawnTimer = null;
             let obstacles = [];
             let threeInitialized = false;
+            let frameCount = 0;
+            let fpsTime = 0;
+            let currentFPS = 60;
 
             // ─── UI HELPERS ──────────────────────────────────────
+
             function setStatus(text, type) {
-                lobbyStatus.textContent = text;
-                lobbyStatus.className = 'lobby-status';
-                if (type === 'error') lobbyStatus.classList.add('error');
-                else if (type === 'success') lobbyStatus.classList.add('success');
+                menuStatus.textContent = text;
+                menuStatus.className = 'menu-status';
+                if (type === 'error') menuStatus.classList.add('error');
+                else if (type === 'success') menuStatus.classList.add('success');
             }
 
             function updateHealthUI() {
@@ -714,6 +836,13 @@
             function updateEnemyHealthUI() {
                 enemyHealthFill.style.width = Math.max(0, remoteHealth) + '%';
                 if (remoteHealth <= 0) remoteDead = true;
+            }
+
+            function updateAmmoUI() {
+                ammoDisplay.innerHTML = currentAmmo + ' <span>/ ' + MAX_AMMO + '</span>';
+                if (isReloading) {
+                    ammoDisplay.innerHTML = '⟳ <span>yeniden doldur...</span>';
+                }
             }
 
             function updateScoreUI() {
@@ -731,10 +860,82 @@
 
             function setNetStatus(text, ok) {
                 netStatus.textContent = text;
-                netStatus.className = ok ? '' : 'disconnected';
+                netStatus.parentElement.className = ok ? '' : 'disconnected';
             }
 
-            // ─── THREE.JS KURULUMU (SAYFA YÜKLENİRKEN) ─────────
+            // ─── AUDIO ────────────────────────────────────────────
+
+            function initAudio() {
+                if (!audioCtx) {
+                    audioCtx = new(window.AudioContext || window.webkitAudioContext)();
+                    masterGain = audioCtx.createGain();
+                    masterGain.gain.value = parseFloat(volumeSlider.value) / 100;
+                    masterGain.connect(audioCtx.destination);
+                }
+            }
+
+            function playSound(type) {
+                try {
+                    if (!audioCtx) initAudio();
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.connect(gain);
+                    gain.connect(masterGain);
+
+                    const now = audioCtx.currentTime;
+                    switch (type) {
+                        case 'shoot':
+                            osc.type = 'sawtooth';
+                            osc.frequency.setValueAtTime(800, now);
+                            osc.frequency.exponentialRampToValueAtTime(200, now + 0.05);
+                            gain.gain.setValueAtTime(0.3, now);
+                            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+                            osc.start(now);
+                            osc.stop(now + 0.06);
+                            break;
+                        case 'hit':
+                            osc.type = 'sine';
+                            osc.frequency.setValueAtTime(1200, now);
+                            osc.frequency.exponentialRampToValueAtTime(400, now + 0.08);
+                            gain.gain.setValueAtTime(0.2, now);
+                            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+                            osc.start(now);
+                            osc.stop(now + 0.08);
+                            break;
+                        case 'death':
+                            osc.type = 'sawtooth';
+                            osc.frequency.setValueAtTime(300, now);
+                            osc.frequency.exponentialRampToValueAtTime(80, now + 0.4);
+                            gain.gain.setValueAtTime(0.25, now);
+                            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+                            osc.start(now);
+                            osc.stop(now + 0.4);
+                            break;
+                        case 'reload':
+                            osc.type = 'square';
+                            osc.frequency.setValueAtTime(600, now);
+                            osc.frequency.exponentialRampToValueAtTime(300, now + 0.1);
+                            gain.gain.setValueAtTime(0.15, now);
+                            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                            osc.start(now);
+                            osc.stop(now + 0.1);
+                            break;
+                        case 'jump':
+                            osc.type = 'sine';
+                            osc.frequency.setValueAtTime(150, now);
+                            osc.frequency.exponentialRampToValueAtTime(400, now + 0.08);
+                            gain.gain.setValueAtTime(0.1, now);
+                            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+                            osc.start(now);
+                            osc.stop(now + 0.08);
+                            break;
+                        default:
+                            break;
+                    }
+                } catch (_) { /* silent fail */ }
+            }
+
+            // ─── THREE.JS SETUP ─────────────────────────────────
 
             function createParticleTexture() {
                 if (particleTexture) return particleTexture;
@@ -744,7 +945,7 @@
                 const ctx = canvas.getContext('2d');
                 const grad = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
                 grad.addColorStop(0, 'rgba(255,255,255,1)');
-                grad.addColorStop(0.2, 'rgba(255,255,255,0.9)');
+                grad.addColorStop(0.15, 'rgba(255,255,255,0.9)');
                 grad.addColorStop(1, 'rgba(255,255,255,0)');
                 ctx.fillStyle = grad;
                 ctx.fillRect(0, 0, 32, 32);
@@ -759,10 +960,11 @@
                 scene.background = new THREE.Color(0x080818);
                 scene.fog = new THREE.Fog(0x080818, 45, 75);
 
-                camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 120);
+                const fov = parseFloat(fovSlider.value) || 75;
+                camera = new THREE.PerspectiveCamera(fov, window.innerWidth / window.innerHeight, 0.1, 120);
                 camera.position.set(0, PLAYER_HEIGHT, 0);
 
-                renderer = new THREE.WebGLRenderer({ antialias: true });
+                renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
                 renderer.setSize(window.innerWidth, window.innerHeight);
                 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
                 renderer.shadowMap.enabled = true;
@@ -775,13 +977,11 @@
                 controls = new THREE.PointerLockControls(camera, renderer.domElement);
                 controls.lockSpeed = 0.002;
 
-                // ─ Lights ─
+                // ── Lights ──
                 const ambient = new THREE.AmbientLight(0x223366, 0.4);
                 scene.add(ambient);
-
                 const hemi = new THREE.HemisphereLight(0x4488ff, 0x002244, 0.5);
                 scene.add(hemi);
-
                 const dirLight = new THREE.DirectionalLight(0xffeedd, 1.6);
                 dirLight.position.set(25, 40, 20);
                 dirLight.castShadow = true;
@@ -794,16 +994,14 @@
                 dirLight.shadow.camera.top = 45;
                 dirLight.shadow.camera.bottom = -45;
                 scene.add(dirLight);
-
                 const rim = new THREE.DirectionalLight(0x4488ff, 0.3);
                 rim.position.set(-20, 10, -25);
                 scene.add(rim);
 
-                // ─ Floor ─
+                // ── Floor ──
                 const grid = new THREE.GridHelper(ARENA_SIZE * 2.2, 28, 0x00ccff, 0x225588);
                 grid.position.y = -0.01;
                 scene.add(grid);
-
                 const floorMat = new THREE.MeshStandardMaterial({
                     color: 0x0a0a20,
                     transparent: true,
@@ -817,7 +1015,7 @@
                 floor.receiveShadow = true;
                 scene.add(floor);
 
-                // ─ Walls ─
+                // ── Walls ──
                 const wallMat = new THREE.MeshStandardMaterial({ color: 0x1a2a4a, roughness: 0.6, metalness: 0.15 });
                 const wallData = [
                     { x: 0, z: -ARENA_SIZE, w: ARENA_SIZE * 2.2, h: 5 },
@@ -835,7 +1033,7 @@
                     obstacles.push(mesh);
                 });
 
-                // ─ Obstacles ─
+                // ── Obstacles ──
                 const obsMat = new THREE.MeshStandardMaterial({
                     color: 0x2a4a7a,
                     roughness: 0.35,
@@ -855,6 +1053,8 @@
                     { x: 3, z: 11, w: 4.4, h: 2.0, d: 1.6 },
                     { x: -12, z: -6, w: 1.4, h: 1.8, d: 3.0 },
                     { x: 12, z: -8, w: 1.4, h: 1.8, d: 3.0 },
+                    { x: -14, z: 8, w: 3.0, h: 1.0, d: 2.0 },
+                    { x: 14, z: -10, w: 3.0, h: 1.0, d: 2.0 },
                 ];
                 obsPos.forEach(d => {
                     const geo = new THREE.BoxGeometry(d.w, d.h, d.d);
@@ -866,7 +1066,31 @@
                     obstacles.push(mesh);
                 });
 
-                // ─ Pillars ─
+                // ── Ramps (sloped boxes) ──
+                const rampMat = new THREE.MeshStandardMaterial({
+                    color: 0x3a5a8a,
+                    roughness: 0.3,
+                    metalness: 0.5,
+                    emissive: 0x002244,
+                    emissiveIntensity: 0.04,
+                });
+                for (let i = 0; i < 3; i++) {
+                    const angle = (i / 3) * Math.PI * 2 + 0.5;
+                    const rad = 11;
+                    const x = Math.cos(angle) * rad;
+                    const z = Math.sin(angle) * rad;
+                    const geo = new THREE.BoxGeometry(2.0, 0.5, 1.8);
+                    const mesh = new THREE.Mesh(geo, rampMat);
+                    mesh.position.set(x, 0.25, z);
+                    mesh.rotation.y = angle;
+                    mesh.castShadow = true;
+                    mesh.receiveShadow = true;
+                    scene.add(mesh);
+                    obstacles.push(mesh);
+                    // add a small platform on top? just for visual
+                }
+
+                // ── Pillars ──
                 const pillarMat = new THREE.MeshStandardMaterial({
                     color: 0x3a5a8a,
                     roughness: 0.25,
@@ -888,32 +1112,40 @@
                     obstacles.push(mesh);
                 }
 
-                // ─ Events ─
+                // ── Bloom Post-Processing ──
+                const renderPass = new THREE.RenderPass(scene, camera);
+                composer = new THREE.EffectComposer(renderer);
+                composer.addPass(renderPass);
+
+                bloomPass = new THREE.UnrealBloomPass(
+                    new THREE.Vector2(window.innerWidth, window.innerHeight),
+                    0.3, 0.2, 0.1
+                );
+                composer.addPass(bloomPass);
+
+                // ── Events ──
                 window.addEventListener('resize', () => {
                     if (renderer) {
                         const w = window.innerWidth,
                             h = window.innerHeight;
                         renderer.setSize(w, h);
+                        composer.setSize(w, h);
                         camera.aspect = w / h;
                         camera.updateProjectionMatrix();
                     }
                 });
 
-                // Click to lock pointer (only when start overlay is visible)
+                // Click to lock / start
                 renderer.domElement.addEventListener('click', () => {
                     if (startOverlay.classList.contains('visible')) {
                         startOverlay.classList.remove('visible');
-                        if (controls && !controls.isLocked) {
-                            controls.lock();
-                        }
+                        if (controls && !controls.isLocked) controls.lock();
                         return;
                     }
                     if (pauseOverlay.classList.contains('visible')) {
                         pauseOverlay.classList.remove('visible');
                         isPaused = false;
-                        if (controls && !controls.isLocked) {
-                            controls.lock();
-                        }
+                        if (controls && !controls.isLocked) controls.lock();
                         return;
                     }
                     if (isPlaying && !localDead && controls && !controls.isLocked) {
@@ -922,7 +1154,7 @@
                 });
 
                 renderer.domElement.addEventListener('mousedown', (e) => {
-                    if (e.button === 0 && isPlaying && !localDead && controls && controls.isLocked) {
+                    if (e.button === 0 && isPlaying && !localDead && !isReloading && controls && controls.isLocked) {
                         shoot();
                     }
                 });
@@ -935,6 +1167,12 @@
                     if (key === 'd') keys.d = true;
                     if (key === ' ') { keys.space = true;
                         e.preventDefault(); }
+                    if (key === 'shift') keys.shift = true;
+                    if (key === 'control') keys.ctrl = true;
+                    if (key === 'r' && isPlaying && !localDead && !isReloading && currentAmmo < MAX_AMMO &&
+                        reserveAmmo > 0) {
+                        startReload();
+                    }
                     if (key === 'escape' && isPlaying) {
                         if (!pauseOverlay.classList.contains('visible')) {
                             pauseOverlay.classList.add('visible');
@@ -950,11 +1188,12 @@
                     if (key === 's') keys.s = false;
                     if (key === 'd') keys.d = false;
                     if (key === ' ') keys.space = false;
+                    if (key === 'shift') keys.shift = false;
+                    if (key === 'control') keys.ctrl = false;
                 });
 
                 renderer.domElement.addEventListener('contextmenu', e => e.preventDefault());
 
-                // Pointer lock change
                 document.addEventListener('pointerlockchange', () => {
                     if (!document.pointerLockElement && isPlaying && !isPaused && !startOverlay.classList.contains(
                             'visible') && !pauseOverlay.classList.contains('visible')) {
@@ -964,6 +1203,62 @@
                         }
                     }
                 });
+
+                // Sensitivity
+                sensitivitySlider.addEventListener('input', () => {
+                    if (controls) controls.lockSpeed = parseFloat(sensitivitySlider.value) * 0.0002;
+                    saveSettings();
+                });
+
+                // FOV
+                fovSlider.addEventListener('input', () => {
+                    if (camera) {
+                        camera.fov = parseFloat(fovSlider.value);
+                        camera.updateProjectionMatrix();
+                    }
+                    saveSettings();
+                });
+
+                // Volume
+                volumeSlider.addEventListener('input', () => {
+                    if (masterGain) masterGain.gain.value = parseFloat(volumeSlider.value) / 100;
+                    saveSettings();
+                });
+
+                // Quality
+                qualitySelect.addEventListener('change', () => {
+                    const q = qualitySelect.value;
+                    if (q === 'high') {
+                        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                        bloomPass.strength = 0.35;
+                    } else if (q === 'medium') {
+                        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+                        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                        bloomPass.strength = 0.25;
+                    } else {
+                        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1));
+                        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                        bloomPass.strength = 0.15;
+                    }
+                    saveSettings();
+                });
+
+                // Fullscreen
+                btnFullscreen.addEventListener('click', () => {
+                    if (!document.fullscreenElement) {
+                        document.documentElement.requestFullscreen().catch(() => {});
+                    } else {
+                        document.exitFullscreen().catch(() => {});
+                    }
+                });
+
+                // Load settings
+                loadSettings();
+                sensitivitySlider.dispatchEvent(new Event('input'));
+                fovSlider.dispatchEvent(new Event('input'));
+                volumeSlider.dispatchEvent(new Event('input'));
+                qualitySelect.dispatchEvent(new Event('change'));
 
                 threeInitialized = true;
                 console.log('✅ Three.js kurulumu tamamlandı.');
@@ -1077,20 +1372,45 @@
                 return true;
             }
 
+            // ─── RELOAD ─────────────────────────────────────────
+
+            function startReload() {
+                if (isReloading || currentAmmo === MAX_AMMO || reserveAmmo <= 0) return;
+                isReloading = true;
+                reloadTimer = RELOAD_TIME;
+                playSound('reload');
+                updateAmmoUI();
+            }
+
+            function updateReload(delta) {
+                if (!isReloading) return;
+                reloadTimer -= delta;
+                if (reloadTimer <= 0) {
+                    isReloading = false;
+                    const needed = MAX_AMMO - currentAmmo;
+                    const give = Math.min(needed, reserveAmmo);
+                    currentAmmo += give;
+                    reserveAmmo -= give;
+                    updateAmmoUI();
+                }
+            }
+
             // ─── RESPAWN ─────────────────────────────────────────
 
             function respawnLocal() {
                 localDead = false;
                 localHealth = 100;
+                currentAmmo = MAX_AMMO;
+                reserveAmmo = MAX_MAG;
+                isReloading = false;
                 updateHealthUI();
+                updateAmmoUI();
                 const pos = getRandomSafePosition();
                 localPlayer.position.copy(pos);
                 camera.position.set(pos.x, PLAYER_HEIGHT, pos.z);
                 if (controls) controls.target.set(pos.x, PLAYER_HEIGHT, pos.z);
                 velocityY = 0;
-                if (conn && conn.open) {
-                    sendState();
-                }
+                if (conn && conn.open) sendState();
                 deathOverlay.classList.remove('visible');
             }
 
@@ -1185,13 +1505,27 @@
             // ─── SHOOT ───────────────────────────────────────────
 
             function shoot() {
-                if (!isPlaying || localDead || shootCooldown > 0 || !controls || !controls.isLocked) return;
+                if (!isPlaying || localDead || shootCooldown > 0 || isReloading || currentAmmo <= 0) return;
                 shootCooldown = SHOOT_DELAY;
+                currentAmmo--;
+                updateAmmoUI();
 
+                // Recoil
                 recoilVelocity = -0.055;
+                playSound('shoot');
+
+                // Muzzle flash (particles)
+                const muzzlePos = camera.position.clone().add(
+                    new THREE.Vector3(0, 0, -0.6).applyQuaternion(camera.quaternion)
+                );
+                spawnParticles(muzzlePos, 0xffaa44, 8, 2.0, 0.2, 0.04);
 
                 const raycaster = new THREE.Raycaster();
                 raycaster.setFromCamera({ x: 0, y: 0 }, camera);
+                // Add spread
+                const spread = (Math.random() - 0.5) * SPREAD * 2;
+                raycaster.ray.direction.x += spread;
+                raycaster.ray.direction.y += (Math.random() - 0.5) * SPREAD * 2;
 
                 let hitRemote = false;
                 let hitPoint = null;
@@ -1202,10 +1536,11 @@
                         hitRemote = true;
                         hitPoint = intersects[0].point.clone();
 
-                        const damage = 25;
+                        const damage = DAMAGE;
                         remoteHealth = Math.max(0, remoteHealth - damage);
                         updateEnemyHealthUI();
                         showHitmarker();
+                        playSound('hit');
 
                         spawnParticles(hitPoint, 0xff2244, 28, 5.5, 0.85, 0.09);
 
@@ -1221,6 +1556,7 @@
                             remoteDead = true;
                             localKills++;
                             updateScoreUI();
+                            playSound('death');
                             if (conn && conn.open) {
                                 conn.send({ type: 'remoteDead' });
                             }
@@ -1242,6 +1578,7 @@
                     const origin = camera.position.clone();
                     const dir = new THREE.Vector3(0, 0, -1);
                     dir.applyQuaternion(camera.quaternion);
+                    // Add spread to dir for remote visual?
                     conn.send({
                         type: 'shoot',
                         origin: { x: origin.x, y: origin.y, z: origin.z },
@@ -1249,6 +1586,11 @@
                         hit: hitRemote,
                         hitPos: hitPoint ? { x: hitPoint.x, y: hitPoint.y, z: hitPoint.z } : null,
                     });
+                }
+
+                // Auto-reload if empty
+                if (currentAmmo === 0 && reserveAmmo > 0) {
+                    setTimeout(() => startReload(), 200);
                 }
             }
 
@@ -1263,6 +1605,8 @@
                     rot: { yaw: camera.rotation.y, pitch: camera.rotation.x },
                     health: localHealth,
                     dead: localDead,
+                    ammo: currentAmmo,
+                    reserve: reserveAmmo,
                 });
             }
 
@@ -1277,6 +1621,7 @@
                             remoteHealth = data.health || 100;
                             remoteDead = data.dead || false;
                             updateEnemyHealthUI();
+                            // Optionally sync ammo? not needed for enemy
                         }
                         break;
                     case 'damage':
@@ -1288,11 +1633,13 @@
                                     new THREE.Vector3(data.hitPos.x, data.hitPos.y, data.hitPos.z),
                                     0xff2244, 22, 4.5, 0.7, 0.08
                                 );
+                                playSound('hit');
                             }
                             if (localHealth <= 0) {
                                 localDead = true;
                                 localDeaths++;
                                 updateScoreUI();
+                                playSound('death');
                                 deathOverlay.classList.add('visible');
                                 clearTimeout(respawnTimer);
                                 respawnTimer = setTimeout(() => { respawnLocal(); }, 2500);
@@ -1313,9 +1660,12 @@
                                 const hp = new THREE.Vector3(data.hitPos.x, data.hitPos.y, data.hitPos.z);
                                 createLaser(origin, hp);
                                 spawnParticles(hp, 0xff8800, 14, 3.5, 0.5, 0.06);
+                                playSound('hit');
                             } else {
                                 createLaser(origin, far);
                             }
+                            // Muzzle flash for remote
+                            spawnParticles(origin, 0xffaa44, 6, 1.5, 0.15, 0.04);
                         }
                         break;
                     default:
@@ -1326,20 +1676,19 @@
             // ─── CONNECTION & GAME START ────────────────────────
 
             function startGame(hostMode, peerId = null) {
-                // ★ KRİTİK: Three.js kurulumu yapılmış mı kontrol et
                 if (!threeInitialized) {
-                    console.error('❌ Three.js başlatılmamış! initThreeJS() çalıştırılmamış.');
-                    setStatus('❌ Sistem hatası: Three.js yüklenmedi', 'error');
+                    console.error('❌ Three.js başlatılmamış!');
+                    setStatus('❌ Sistem hatası', 'error');
                     return;
                 }
-                // ★ KRİTİK: camera ve controls mevcut mu?
                 if (!camera || !controls) {
                     console.error('❌ Kamera veya kontroller mevcut değil!');
-                    setStatus('❌ Sistem hatası: Kamera başlatılamadı', 'error');
+                    setStatus('❌ Kamera hatası', 'error');
                     return;
                 }
 
                 isHost = hostMode;
+                initAudio();
 
                 // Local player
                 const color = isHost ? 0x44aaff : 0xff6644;
@@ -1369,15 +1718,19 @@
                 localDeaths = 0;
                 remoteKills = 0;
                 remoteDeaths = 0;
+                currentAmmo = MAX_AMMO;
+                reserveAmmo = MAX_MAG;
+                isReloading = false;
                 velocityY = 0;
                 recoilPitch = 0;
                 recoilVelocity = 0;
                 updateHealthUI();
                 updateEnemyHealthUI();
+                updateAmmoUI();
                 updateScoreUI();
 
                 // UI
-                lobby.classList.add('hidden');
+                menu.classList.add('hidden');
                 hud.classList.add('visible');
                 startOverlay.classList.add('visible');
                 isPlaying = true;
@@ -1428,7 +1781,6 @@
                     });
                 }
 
-                // Animation loop başlat
                 animate();
             }
 
@@ -1439,7 +1791,7 @@
                 if (peer) { peer.destroy();
                     peer = null; }
 
-                lobby.classList.remove('hidden');
+                menu.classList.remove('hidden');
                 hud.classList.remove('visible');
                 startOverlay.classList.remove('visible');
                 pauseOverlay.classList.remove('visible');
@@ -1450,7 +1802,6 @@
                 setStatus('⛔ Bağlantı koptu', 'error');
                 setNetStatus('⚠ BAĞLANTI KOPTU', false);
 
-                // Oyuncu nesnelerini temizle (sahne kalır)
                 if (localPlayer) { scene.remove(localPlayer);
                     localPlayer = null; }
                 if (remotePlayer) { scene.remove(remotePlayer);
@@ -1472,6 +1823,16 @@
 
                 const delta = Math.min(clock.getDelta(), 0.05);
 
+                // FPS counter
+                frameCount++;
+                fpsTime += delta;
+                if (fpsTime >= 0.5) {
+                    currentFPS = Math.round(frameCount / fpsTime);
+                    fpsDisplay.textContent = currentFPS + ' FPS';
+                    frameCount = 0;
+                    fpsTime = 0;
+                }
+
                 // Cooldowns
                 if (shootCooldown > 0) shootCooldown -= delta;
                 if (laserTimer > 0) {
@@ -1484,8 +1845,16 @@
                     }
                 }
 
+                // Reload
+                updateReload(delta);
+
                 // Movement
                 if (!localDead && !isPaused && controls && controls.isLocked) {
+                    // Speed
+                    currentSpeed = BASE_SPEED;
+                    if (keys.shift && !keys.ctrl && !isReloading) currentSpeed *= SPRINT_MULT;
+                    if (keys.ctrl) currentSpeed *= CROUCH_MULT;
+
                     const forward = new THREE.Vector3(0, 0, -1);
                     forward.applyQuaternion(camera.quaternion);
                     forward.y = 0;
@@ -1501,10 +1870,11 @@
                     if (keys.s) moveVec.sub(forward);
                     if (keys.a) moveVec.sub(right);
                     if (keys.d) moveVec.add(right);
-                    if (moveVec.length() > 0) moveVec.normalize().multiplyScalar(MOVE_SPEED);
+                    if (moveVec.length() > 0) moveVec.normalize().multiplyScalar(currentSpeed);
 
                     if (keys.space && velocityY === 0) {
                         velocityY = JUMP_SPEED;
+                        playSound('jump');
                     }
 
                     velocityY += GRAVITY * delta;
@@ -1533,12 +1903,13 @@
                         localPlayer.position.y = 0;
                     }
 
-                    // Sway
+                    // Sway & bob
                     const isMoving = (keys.w || keys.a || keys.s || keys.d);
                     if (isMoving) {
                         swayAngle += delta * 7;
                         swayOffset.x = Math.sin(swayAngle) * 0.018;
                         swayOffset.y = Math.sin(swayAngle * 0.7) * 0.012;
+                        weaponBob += delta * 10;
                     } else {
                         swayOffset.x *= 0.92;
                         swayOffset.y *= 0.92;
@@ -1556,11 +1927,12 @@
 
                     if (localGunMesh) {
                         localGunMesh.position.x = 0.3 + swayOffset.x;
-                        localGunMesh.position.y = 0.9 + swayOffset.y;
+                        localGunMesh.position.y = 0.9 + swayOffset.y + Math.sin(weaponBob) * 0.003;
                         localGunMesh.position.z = 0.25 - recoilPitch * 0.35;
                         localGunMesh.rotation.x = recoilPitch * 0.6;
                     }
 
+                    // Send state
                     if (conn && conn.open && performance.now() - _lastSend > 35) {
                         sendState();
                         _lastSend = performance.now();
@@ -1584,10 +1956,12 @@
                     }
                 }
 
+                // Particles
                 updateParticles(delta);
 
+                // Render with bloom
                 if (renderer && scene && camera) {
-                    renderer.render(scene, camera);
+                    composer.render(delta);
                 }
             }
 
@@ -1623,7 +1997,7 @@
                 if (e.key === 'Enter') btnConnect.click();
             });
 
-            // ─── SAYFA YÜKLENİRKEN THREE.JS KURULUMU ────────────
+            // ─── SAYFA YÜKLENİRKEN ──────────────────────────────
 
             window.addEventListener('load', () => {
                 console.log('🔄 Sayfa yüklendi, Three.js kuruluyor...');
@@ -1635,7 +2009,7 @@
                 if (peer) peer.destroy();
             });
 
-            console.log('⚡ NEON ARENA loaded. Waiting for page load...');
+            console.log('⚡ NEON ARENA Professional Edition loaded.');
         })();
     </script>
 </body>
